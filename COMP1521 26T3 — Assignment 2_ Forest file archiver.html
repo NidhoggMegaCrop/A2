@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<!-- saved from url=(0068)https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>
+        COMP1521 26T3 —
+        
+Assignment 2: Forest file archiver
+
+    </title><link rel="canonical" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/">
+
+    <link rel="stylesheet" href="./COMP1521 26T3 — Assignment 2_ Forest file archiver_files/bootstrap.min.css" integrity="sha256-aAr2Zpq8MZ+YA/D6JtRD3xtrwpEz2IqOS+pWD/7XKIw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="./COMP1521 26T3 — Assignment 2_ Forest file archiver_files/course.css">
+
+    <script src="./COMP1521 26T3 — Assignment 2_ Forest file archiver_files/jquery.min.js.下载" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="./COMP1521 26T3 — Assignment 2_ Forest file archiver_files/popper.min.js.下载" integrity="sha256-/ijcOLwFf26xEYAjW75FizKVo5tnTYiQddPZoLUHHZ8=" crossorigin="anonymous"></script>
+    <script src="./COMP1521 26T3 — Assignment 2_ Forest file archiver_files/bootstrap.min.js.下载" integrity="sha256-OFRAJNoaD8L3Br5lglV7VyLRf0itmoBzWUoM+Sji4/8=" crossorigin="anonymous"></script>
+
+    <script src="./COMP1521 26T3 — Assignment 2_ Forest file archiver_files/course.js.下载"></script>
+
+    <link rel="icon" type="image/png" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/flask.cgi/static/favicon.ico?21571789035672.4882824=">
+
+    <!-- <script async src="https://static.codepen.io/assets/embed/ei.js"></script> -->
+
+    <!-- MathJax. -->
+    
+
+    
+<link rel="stylesheet" href="./COMP1521 26T3 — Assignment 2_ Forest file archiver_files/bootstrap-toc.min.css">
+<!-- add after bootstrap.min.js -->
+<script src="./COMP1521 26T3 — Assignment 2_ Forest file archiver_files/bootstrap-toc.min.js.下载"></script><script type="text/javascript" async="" src="./COMP1521 26T3 — Assignment 2_ Forest file archiver_files/MathJax.js.下载"></script><style type="text/css">.MathJax_Hover_Frame {border-radius: .25em; -webkit-border-radius: .25em; -moz-border-radius: .25em; -khtml-border-radius: .25em; box-shadow: 0px 0px 15px #83A; -webkit-box-shadow: 0px 0px 15px #83A; -moz-box-shadow: 0px 0px 15px #83A; -khtml-box-shadow: 0px 0px 15px #83A; border: 1px solid #A6D ! important; display: inline-block; position: absolute}
+.MathJax_Menu_Button .MathJax_Hover_Arrow {position: absolute; cursor: pointer; display: inline-block; border: 2px solid #AAA; border-radius: 4px; -webkit-border-radius: 4px; -moz-border-radius: 4px; -khtml-border-radius: 4px; font-family: 'Courier New',Courier; font-size: 9px; color: #F0F0F0}
+.MathJax_Menu_Button .MathJax_Hover_Arrow span {display: block; background-color: #AAA; border: 1px solid; border-radius: 3px; line-height: 0; padding: 4px}
+.MathJax_Hover_Arrow:hover {color: white!important; border: 2px solid #CCC!important}
+.MathJax_Hover_Arrow:hover span {background-color: #CCC!important}
+</style><style type="text/css">#MathJax_About {position: fixed; left: 50%; width: auto; text-align: center; border: 3px outset; padding: 1em 2em; background-color: #DDDDDD; color: black; cursor: default; font-family: message-box; font-size: 120%; font-style: normal; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 15px; -webkit-border-radius: 15px; -moz-border-radius: 15px; -khtml-border-radius: 15px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_About.MathJax_MousePost {outline: none}
+.MathJax_Menu {position: absolute; background-color: white; color: black; width: auto; padding: 2px; border: 1px solid #CCCCCC; margin: 0; cursor: default; font: menu; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_MenuItem {padding: 2px 2em; background: transparent}
+.MathJax_MenuArrow {position: absolute; right: .5em; padding-top: .25em; color: #666666; font-size: .75em}
+.MathJax_MenuActive .MathJax_MenuArrow {color: white}
+.MathJax_MenuArrow.RTL {left: .5em; right: auto}
+.MathJax_MenuCheck {position: absolute; left: .7em}
+.MathJax_MenuCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuRadioCheck {position: absolute; left: 1em}
+.MathJax_MenuRadioCheck.RTL {right: 1em; left: auto}
+.MathJax_MenuLabel {padding: 2px 2em 4px 1.33em; font-style: italic}
+.MathJax_MenuRule {border-top: 1px solid #CCCCCC; margin: 4px 1px 0px}
+.MathJax_MenuDisabled {color: GrayText}
+.MathJax_MenuActive {background-color: Highlight; color: HighlightText}
+.MathJax_MenuDisabled:focus, .MathJax_MenuLabel:focus {background-color: #E8E8E8}
+.MathJax_ContextMenu:focus {outline: none}
+.MathJax_ContextMenu .MathJax_MenuItem:focus {outline: none}
+#MathJax_AboutClose {top: .2em; right: .2em}
+.MathJax_Menu .MathJax_MenuClose {top: -10px; left: -10px}
+.MathJax_MenuClose {position: absolute; cursor: pointer; display: inline-block; border: 2px solid #AAA; border-radius: 18px; -webkit-border-radius: 18px; -moz-border-radius: 18px; -khtml-border-radius: 18px; font-family: 'Courier New',Courier; font-size: 24px; color: #F0F0F0}
+.MathJax_MenuClose span {display: block; background-color: #AAA; border: 1.5px solid; border-radius: 18px; -webkit-border-radius: 18px; -moz-border-radius: 18px; -khtml-border-radius: 18px; line-height: 0; padding: 8px 0 6px}
+.MathJax_MenuClose:hover {color: white!important; border: 2px solid #CCC!important}
+.MathJax_MenuClose:hover span {background-color: #CCC!important}
+.MathJax_MenuClose:hover:focus {outline: none}
+</style><style type="text/css">.MathJax_Preview .MJXf-math {color: inherit!important}
+</style><style type="text/css">.MJX_Assistive_MathML {position: absolute!important; top: 0; left: 0; clip: rect(1px, 1px, 1px, 1px); padding: 1px 0 0 0!important; border: 0!important; height: 1px!important; width: 1px!important; overflow: hidden!important; display: block!important; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none}
+.MJX_Assistive_MathML.MJX_Assistive_MathML_Block {width: 100%!important}
+</style><style type="text/css">#MathJax_Zoom {position: absolute; background-color: #F0F0F0; overflow: auto; display: block; z-index: 301; padding: .5em; border: 1px solid black; margin: 0; font-weight: normal; font-style: normal; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; -webkit-box-sizing: content-box; -moz-box-sizing: content-box; box-sizing: content-box; box-shadow: 5px 5px 15px #AAAAAA; -webkit-box-shadow: 5px 5px 15px #AAAAAA; -moz-box-shadow: 5px 5px 15px #AAAAAA; -khtml-box-shadow: 5px 5px 15px #AAAAAA; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_ZoomOverlay {position: absolute; left: 0; top: 0; z-index: 300; display: inline-block; width: 100%; height: 100%; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+#MathJax_ZoomFrame {position: relative; display: inline-block; height: 0; width: 0}
+#MathJax_ZoomEventTrap {position: absolute; left: 0; top: 0; z-index: 302; display: inline-block; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+</style><style type="text/css">.MathJax_Preview {color: #888}
+#MathJax_Message {position: fixed; left: 1em; bottom: 1.5em; background-color: #E6E6E6; border: 1px solid #959595; margin: 0px; padding: 2px 8px; z-index: 102; color: black; font-size: 80%; width: auto; white-space: nowrap}
+#MathJax_MSIE_Frame {position: absolute; top: 0; left: 0; width: 0px; z-index: 101; border: 0px; margin: 0px; padding: 0px}
+.MathJax_Error {color: #CC0000; font-style: italic}
+</style>
+
+
+    
+<style type="text/css">.MJXp-script {font-size: .8em}
+.MJXp-right {-webkit-transform-origin: right; -moz-transform-origin: right; -ms-transform-origin: right; -o-transform-origin: right; transform-origin: right}
+.MJXp-bold {font-weight: bold}
+.MJXp-italic {font-style: italic}
+.MJXp-scr {font-family: MathJax_Script,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-frak {font-family: MathJax_Fraktur,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-sf {font-family: MathJax_SansSerif,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-cal {font-family: MathJax_Caligraphic,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-mono {font-family: MathJax_Typewriter,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-largeop {font-size: 150%}
+.MJXp-largeop.MJXp-int {vertical-align: -.2em}
+.MJXp-math {display: inline-block; line-height: 1.2; text-indent: 0; font-family: 'Times New Roman',Times,STIXGeneral,serif; white-space: nowrap; border-collapse: collapse}
+.MJXp-display {display: block; text-align: center; margin: 1em 0}
+.MJXp-math span {display: inline-block}
+.MJXp-box {display: block!important; text-align: center}
+.MJXp-box:after {content: " "}
+.MJXp-rule {display: block!important; margin-top: .1em}
+.MJXp-char {display: block!important}
+.MJXp-mo {margin: 0 .15em}
+.MJXp-mfrac {margin: 0 .125em; vertical-align: .25em}
+.MJXp-denom {display: inline-table!important; width: 100%}
+.MJXp-denom > * {display: table-row!important}
+.MJXp-surd {vertical-align: top}
+.MJXp-surd > * {display: block!important}
+.MJXp-script-box > *  {display: table!important; height: 50%}
+.MJXp-script-box > * > * {display: table-cell!important; vertical-align: top}
+.MJXp-script-box > *:last-child > * {vertical-align: bottom}
+.MJXp-script-box > * > * > * {display: block!important}
+.MJXp-mphantom {visibility: hidden}
+.MJXp-munderover, .MJXp-munder {display: inline-table!important}
+.MJXp-over {display: inline-block!important; text-align: center}
+.MJXp-over > * {display: block!important}
+.MJXp-munderover > *, .MJXp-munder > * {display: table-row!important}
+.MJXp-mtable {vertical-align: .25em; margin: 0 .125em}
+.MJXp-mtable > * {display: inline-table!important; vertical-align: middle}
+.MJXp-mtr {display: table-row!important}
+.MJXp-mtd {display: table-cell!important; text-align: center; padding: .5em 0 0 .5em}
+.MJXp-mtr > .MJXp-mtd:first-child {padding-left: 0}
+.MJXp-mtr:first-child > .MJXp-mtd {padding-top: 0}
+.MJXp-mlabeledtr {display: table-row!important}
+.MJXp-mlabeledtr > .MJXp-mtd:first-child {padding-left: 0}
+.MJXp-mlabeledtr:first-child > .MJXp-mtd {padding-top: 0}
+.MJXp-merror {background-color: #FFFF88; color: #CC0000; border: 1px solid #CC0000; padding: 1px 3px; font-style: normal; font-size: 90%}
+.MJXp-scale0 {-webkit-transform: scaleX(.0); -moz-transform: scaleX(.0); -ms-transform: scaleX(.0); -o-transform: scaleX(.0); transform: scaleX(.0)}
+.MJXp-scale1 {-webkit-transform: scaleX(.1); -moz-transform: scaleX(.1); -ms-transform: scaleX(.1); -o-transform: scaleX(.1); transform: scaleX(.1)}
+.MJXp-scale2 {-webkit-transform: scaleX(.2); -moz-transform: scaleX(.2); -ms-transform: scaleX(.2); -o-transform: scaleX(.2); transform: scaleX(.2)}
+.MJXp-scale3 {-webkit-transform: scaleX(.3); -moz-transform: scaleX(.3); -ms-transform: scaleX(.3); -o-transform: scaleX(.3); transform: scaleX(.3)}
+.MJXp-scale4 {-webkit-transform: scaleX(.4); -moz-transform: scaleX(.4); -ms-transform: scaleX(.4); -o-transform: scaleX(.4); transform: scaleX(.4)}
+.MJXp-scale5 {-webkit-transform: scaleX(.5); -moz-transform: scaleX(.5); -ms-transform: scaleX(.5); -o-transform: scaleX(.5); transform: scaleX(.5)}
+.MJXp-scale6 {-webkit-transform: scaleX(.6); -moz-transform: scaleX(.6); -ms-transform: scaleX(.6); -o-transform: scaleX(.6); transform: scaleX(.6)}
+.MJXp-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
+.MJXp-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
+.MJXp-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
+.MathJax_PHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+</style><style type="text/css">.mjx-chtml {display: inline-block; line-height: 0; text-indent: 0; text-align: left; text-transform: none; font-style: normal; font-weight: normal; font-size: 100%; font-size-adjust: none; letter-spacing: normal; word-wrap: normal; word-spacing: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0; min-height: 0; border: 0; margin: 0; padding: 1px 0}
+.MJXc-display {display: block; text-align: center; margin: 1em 0; padding: 0}
+.mjx-chtml[tabindex]:focus, body :focus .mjx-chtml[tabindex] {display: inline-table}
+.mjx-full-width {text-align: center; display: table-cell!important; width: 10000em}
+.mjx-math {display: inline-block; border-collapse: separate; border-spacing: 0}
+.mjx-math * {display: inline-block; -webkit-box-sizing: content-box!important; -moz-box-sizing: content-box!important; box-sizing: content-box!important; text-align: left}
+.mjx-numerator {display: block; text-align: center}
+.mjx-denominator {display: block; text-align: center}
+.MJXc-stacked {height: 0; position: relative}
+.MJXc-stacked > * {position: absolute}
+.MJXc-bevelled > * {display: inline-block}
+.mjx-stack {display: inline-block}
+.mjx-op {display: block}
+.mjx-under {display: table-cell}
+.mjx-over {display: block}
+.mjx-over > * {padding-left: 0px!important; padding-right: 0px!important}
+.mjx-under > * {padding-left: 0px!important; padding-right: 0px!important}
+.mjx-stack > .mjx-sup {display: block}
+.mjx-stack > .mjx-sub {display: block}
+.mjx-prestack > .mjx-presup {display: block}
+.mjx-prestack > .mjx-presub {display: block}
+.mjx-delim-h > .mjx-char {display: inline-block}
+.mjx-surd {vertical-align: top}
+.mjx-mphantom * {visibility: hidden}
+.mjx-merror {background-color: #FFFF88; color: #CC0000; border: 1px solid #CC0000; padding: 2px 3px; font-style: normal; font-size: 90%}
+.mjx-annotation-xml {line-height: normal}
+.mjx-menclose > svg {fill: none; stroke: currentColor}
+.mjx-mtr {display: table-row}
+.mjx-mlabeledtr {display: table-row}
+.mjx-mtd {display: table-cell; text-align: center}
+.mjx-label {display: table-row}
+.mjx-box {display: inline-block}
+.mjx-block {display: block}
+.mjx-span {display: inline}
+.mjx-char {display: block; white-space: pre}
+.mjx-itable {display: inline-table; width: auto}
+.mjx-row {display: table-row}
+.mjx-cell {display: table-cell}
+.mjx-table {display: table; width: 100%}
+.mjx-line {display: block; height: 0}
+.mjx-strut {width: 0; padding-top: 1em}
+.mjx-vsize {width: 0}
+.MJXc-space1 {margin-left: .167em}
+.MJXc-space2 {margin-left: .222em}
+.MJXc-space3 {margin-left: .278em}
+.mjx-chartest {display: block; visibility: hidden; position: absolute; top: 0; line-height: normal; font-size: 500%}
+.mjx-chartest .mjx-char {display: inline}
+.mjx-chartest .mjx-box {padding-top: 1000px}
+.MJXc-processing {visibility: hidden; position: fixed; width: 0; height: 0; overflow: hidden}
+.MJXc-processed {display: none}
+.mjx-test {font-style: normal; font-weight: normal; font-size: 100%; font-size-adjust: none; text-indent: 0; text-transform: none; letter-spacing: normal; word-spacing: normal; overflow: hidden; height: 1px}
+.mjx-test.mjx-test-display {display: table!important}
+.mjx-test.mjx-test-inline {display: inline!important; margin-right: -1px}
+.mjx-test.mjx-test-default {display: block!important; clear: both}
+.mjx-ex-box {display: inline-block!important; position: absolute; overflow: hidden; min-height: 0; max-height: none; padding: 0; border: 0; margin: 0; width: 1px; height: 60ex}
+.mjx-test-inline .mjx-left-box {display: inline-block; width: 0; float: left}
+.mjx-test-inline .mjx-right-box {display: inline-block; width: 0; float: right}
+.mjx-test-display .mjx-right-box {display: table-cell!important; width: 10000em!important; min-width: 0; max-width: none; padding: 0; border: 0; margin: 0}
+#MathJax_CHTML_Tooltip {background-color: InfoBackground; color: InfoText; border: 1px solid black; box-shadow: 2px 2px 5px #AAAAAA; -webkit-box-shadow: 2px 2px 5px #AAAAAA; -moz-box-shadow: 2px 2px 5px #AAAAAA; -khtml-box-shadow: 2px 2px 5px #AAAAAA; padding: 3px 4px; z-index: 401; position: absolute; left: 0; top: 0; width: auto; height: auto; display: none}
+.mjx-chtml .mjx-noError {line-height: 1.2; vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+.MJXc-TeX-unknown-R {font-family: STIXGeneral,'Cambria Math','Arial Unicode MS',serif; font-style: normal; font-weight: normal}
+.MJXc-TeX-unknown-I {font-family: STIXGeneral,'Cambria Math','Arial Unicode MS',serif; font-style: italic; font-weight: normal}
+.MJXc-TeX-unknown-B {font-family: STIXGeneral,'Cambria Math','Arial Unicode MS',serif; font-style: normal; font-weight: bold}
+.MJXc-TeX-unknown-BI {font-family: STIXGeneral,'Cambria Math','Arial Unicode MS',serif; font-style: italic; font-weight: bold}
+.MJXc-TeX-ams-R {font-family: MJXc-TeX-ams-R,MJXc-TeX-ams-Rw}
+.MJXc-TeX-cal-B {font-family: MJXc-TeX-cal-B,MJXc-TeX-cal-Bx,MJXc-TeX-cal-Bw}
+.MJXc-TeX-frak-R {font-family: MJXc-TeX-frak-R,MJXc-TeX-frak-Rw}
+.MJXc-TeX-frak-B {font-family: MJXc-TeX-frak-B,MJXc-TeX-frak-Bx,MJXc-TeX-frak-Bw}
+.MJXc-TeX-math-BI {font-family: MJXc-TeX-math-BI,MJXc-TeX-math-BIx,MJXc-TeX-math-BIw}
+.MJXc-TeX-sans-R {font-family: MJXc-TeX-sans-R,MJXc-TeX-sans-Rw}
+.MJXc-TeX-sans-B {font-family: MJXc-TeX-sans-B,MJXc-TeX-sans-Bx,MJXc-TeX-sans-Bw}
+.MJXc-TeX-sans-I {font-family: MJXc-TeX-sans-I,MJXc-TeX-sans-Ix,MJXc-TeX-sans-Iw}
+.MJXc-TeX-script-R {font-family: MJXc-TeX-script-R,MJXc-TeX-script-Rw}
+.MJXc-TeX-type-R {font-family: MJXc-TeX-type-R,MJXc-TeX-type-Rw}
+.MJXc-TeX-cal-R {font-family: MJXc-TeX-cal-R,MJXc-TeX-cal-Rw}
+.MJXc-TeX-main-B {font-family: MJXc-TeX-main-B,MJXc-TeX-main-Bx,MJXc-TeX-main-Bw}
+.MJXc-TeX-main-I {font-family: MJXc-TeX-main-I,MJXc-TeX-main-Ix,MJXc-TeX-main-Iw}
+.MJXc-TeX-main-R {font-family: MJXc-TeX-main-R,MJXc-TeX-main-Rw}
+.MJXc-TeX-math-I {font-family: MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw}
+.MJXc-TeX-size1-R {font-family: MJXc-TeX-size1-R,MJXc-TeX-size1-Rw}
+.MJXc-TeX-size2-R {font-family: MJXc-TeX-size2-R,MJXc-TeX-size2-Rw}
+.MJXc-TeX-size3-R {font-family: MJXc-TeX-size3-R,MJXc-TeX-size3-Rw}
+.MJXc-TeX-size4-R {font-family: MJXc-TeX-size4-R,MJXc-TeX-size4-Rw}
+.MJXc-TeX-vec-R {font-family: MJXc-TeX-vec-R,MJXc-TeX-vec-Rw}
+.MJXc-TeX-vec-B {font-family: MJXc-TeX-vec-B,MJXc-TeX-vec-Bx,MJXc-TeX-vec-Bw}
+@font-face {font-family: MJXc-TeX-ams-R; src: local('MathJax_AMS'), local('MathJax_AMS-Regular')}
+@font-face {font-family: MJXc-TeX-ams-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_AMS-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_AMS-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_AMS-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-cal-B; src: local('MathJax_Caligraphic Bold'), local('MathJax_Caligraphic-Bold')}
+@font-face {font-family: MJXc-TeX-cal-Bx; src: local('MathJax_Caligraphic'); font-weight: bold}
+@font-face {font-family: MJXc-TeX-cal-Bw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Caligraphic-Bold.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Caligraphic-Bold.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Caligraphic-Bold.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-frak-R; src: local('MathJax_Fraktur'), local('MathJax_Fraktur-Regular')}
+@font-face {font-family: MJXc-TeX-frak-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Fraktur-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Fraktur-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Fraktur-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-frak-B; src: local('MathJax_Fraktur Bold'), local('MathJax_Fraktur-Bold')}
+@font-face {font-family: MJXc-TeX-frak-Bx; src: local('MathJax_Fraktur'); font-weight: bold}
+@font-face {font-family: MJXc-TeX-frak-Bw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Fraktur-Bold.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Fraktur-Bold.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Fraktur-Bold.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-math-BI; src: local('MathJax_Math BoldItalic'), local('MathJax_Math-BoldItalic')}
+@font-face {font-family: MJXc-TeX-math-BIx; src: local('MathJax_Math'); font-weight: bold; font-style: italic}
+@font-face {font-family: MJXc-TeX-math-BIw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Math-BoldItalic.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Math-BoldItalic.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Math-BoldItalic.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-sans-R; src: local('MathJax_SansSerif'), local('MathJax_SansSerif-Regular')}
+@font-face {font-family: MJXc-TeX-sans-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-sans-B; src: local('MathJax_SansSerif Bold'), local('MathJax_SansSerif-Bold')}
+@font-face {font-family: MJXc-TeX-sans-Bx; src: local('MathJax_SansSerif'); font-weight: bold}
+@font-face {font-family: MJXc-TeX-sans-Bw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Bold.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Bold.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Bold.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-sans-I; src: local('MathJax_SansSerif Italic'), local('MathJax_SansSerif-Italic')}
+@font-face {font-family: MJXc-TeX-sans-Ix; src: local('MathJax_SansSerif'); font-style: italic}
+@font-face {font-family: MJXc-TeX-sans-Iw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Italic.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Italic.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Italic.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-script-R; src: local('MathJax_Script'), local('MathJax_Script-Regular')}
+@font-face {font-family: MJXc-TeX-script-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Script-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Script-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Script-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-type-R; src: local('MathJax_Typewriter'), local('MathJax_Typewriter-Regular')}
+@font-face {font-family: MJXc-TeX-type-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Typewriter-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Typewriter-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Typewriter-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-cal-R; src: local('MathJax_Caligraphic'), local('MathJax_Caligraphic-Regular')}
+@font-face {font-family: MJXc-TeX-cal-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Caligraphic-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Caligraphic-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Caligraphic-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-main-B; src: local('MathJax_Main Bold'), local('MathJax_Main-Bold')}
+@font-face {font-family: MJXc-TeX-main-Bx; src: local('MathJax_Main'); font-weight: bold}
+@font-face {font-family: MJXc-TeX-main-Bw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Main-Bold.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Main-Bold.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Main-Bold.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-main-I; src: local('MathJax_Main Italic'), local('MathJax_Main-Italic')}
+@font-face {font-family: MJXc-TeX-main-Ix; src: local('MathJax_Main'); font-style: italic}
+@font-face {font-family: MJXc-TeX-main-Iw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Main-Italic.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Main-Italic.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Main-Italic.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-main-R; src: local('MathJax_Main'), local('MathJax_Main-Regular')}
+@font-face {font-family: MJXc-TeX-main-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Main-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Main-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Main-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-math-I; src: local('MathJax_Math Italic'), local('MathJax_Math-Italic')}
+@font-face {font-family: MJXc-TeX-math-Ix; src: local('MathJax_Math'); font-style: italic}
+@font-face {font-family: MJXc-TeX-math-Iw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Math-Italic.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Math-Italic.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Math-Italic.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-size1-R; src: local('MathJax_Size1'), local('MathJax_Size1-Regular')}
+@font-face {font-family: MJXc-TeX-size1-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Size1-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Size1-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Size1-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-size2-R; src: local('MathJax_Size2'), local('MathJax_Size2-Regular')}
+@font-face {font-family: MJXc-TeX-size2-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Size2-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Size2-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Size2-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-size3-R; src: local('MathJax_Size3'), local('MathJax_Size3-Regular')}
+@font-face {font-family: MJXc-TeX-size3-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Size3-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Size3-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Size3-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-size4-R; src: local('MathJax_Size4'), local('MathJax_Size4-Regular')}
+@font-face {font-family: MJXc-TeX-size4-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Size4-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Size4-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Size4-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-vec-R; src: local('MathJax_Vector'), local('MathJax_Vector-Regular')}
+@font-face {font-family: MJXc-TeX-vec-Rw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Vector-Regular.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Vector-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Vector-Regular.otf') format('opentype')}
+@font-face {font-family: MJXc-TeX-vec-B; src: local('MathJax_Vector Bold'), local('MathJax_Vector-Bold')}
+@font-face {font-family: MJXc-TeX-vec-Bx; src: local('MathJax_Vector'); font-weight: bold}
+@font-face {font-family: MJXc-TeX-vec-Bw; src /*1*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/eot/MathJax_Vector-Bold.eot'); src /*2*/: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/woff/MathJax_Vector-Bold.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/fonts/HTML-CSS/TeX/otf/MathJax_Vector-Bold.otf') format('opentype')}
+</style><style>.f1l1o3bf{font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif, Arial;font-style:normal;font-weight:400}.f1l1o3bf button, .f1l1o3bf input, .f1l1o3bf textarea{font-family:inherit}.f4ofdyf{border:0.5px solid var(--origin-color-border-base-subdued);border-radius:8px;cursor:pointer;height:24px;transition:width 150ms cubic-bezier(0.05, 0.6, 0, 1), height 150ms cubic-bezier(0.05, 0.6, 0, 1), border-radius 150ms cubic-bezier(0.05, 0.6, 0, 1);width:24px}.f137tu7e{flex-shrink:0;transform:scale(1);transition:transform 150ms cubic-bezier(0.05, 0.6, 0, 1)}[data-origin-mode="dark"] .f137tu7e{--origin-color-logo-grammarly-light:var(--origin-color-logo-grammarly-dark);--origin-color-logo-grammarly-primary:var(--origin-color-logo-grammarly-default)}.ftwgcg0{-moz-appearance:none;-webkit-appearance:none;align-items:flex-start;appearance:none;background:transparent;border:none;color:inherit;cursor:pointer;display:flex;font:inherit;height:32px;justify-content:flex-start;padding:0;width:32px}.ftwgcg0:hover .f4ofdyf{border-radius:12px;height:32px;width:32px}.ftwgcg0:hover .f137tu7e{transform:scale(1.25)}.f13cnbb7 .f4ofdyf{border-radius:12px;height:32px;width:32px}.f13cnbb7 .f137tu7e{transform:scale(1.25)}.f8ia88a{--origin-color-button-ghost-content-default:#714cb6;--origin-color-button-ghost-content-states:#533192;--origin-color-button-primary-fill-active:#3f256f;--origin-color-button-primary-fill-default:#714cb6;--origin-color-button-primary-fill-hover:#533192;--origin-font-weight-heading-xsmall:600}[data-origin-mode="dark"] .f8ia88a{--origin-color-button-ghost-content-default:#d4c7ff;--origin-color-button-ghost-content-states:#bea1f5;--origin-color-button-primary-content-default:#141413;--origin-color-button-primary-fill-active:#e8e0ff;--origin-color-button-primary-fill-default:#bea1f5;--origin-color-button-primary-fill-hover:#d4c7ff}.f347vxz{font-weight:600}</style></head>
+<body class="d-flex flex-column" style="min-height: 100vh;" data-new-gr-c-s-check-loaded="14.1346.0" data-gr-ext-installed=""><div id="MathJax_Message" style="display: none;"></div>
+<nav class="navbar fixed-top navbar-expand-lg navbar-dark no-print" id="header-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/">
+            COMP1521 - 26T3
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navmenu" aria-controls="navmenu" aria-label="Toggle navigation" aria-expanded="false">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navmenu">
+            <ul class="navbar-nav mr-auto">
+                
+                    
+                        <li class="nav-item active">
+                            <a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/outline/">
+                                Outline
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item active">
+                            <a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/timetable/">
+                                Timetable
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item active">
+                            <a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/help-sessions/">
+                                Help Sessions
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item active">
+                            <a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/resources/forum.html">
+                                Forum
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item active">
+                            <a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/student/">
+                                Submissions
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item active">
+                            <a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass1/index.html">
+                                Assignment 1
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item active">
+                            <a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html">
+                                Assignment 2
+                            </a>
+                        </li>
+                    
+                    
+                    
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+<main class="container" aria-label="Content" style="flex: 1; padding-top: 4rem;">
+    
+
+        <header>
+            
+                <h1 class="text-center">
+Assignment 2: Forest file archiver
+</h1>
+            
+        </header>
+
+        
+<style>
+    h1::before,h2::before {
+      content: '';
+      display: block;
+      height:      50px;
+      margin-top: -50px;
+      visibility: hidden;
+    }
+
+    #toc {
+      position: -webkit-sticky; /* Safari */
+      position: sticky;
+      top: 70px;
+    }
+
+    main[aria-label="Content"] {
+        max-width: 70rem;
+    }
+</style>
+
+<div class="row" id="assignment-body">
+<div class="col-lg-10 col-12">
+
+
+
+
+<aside class="danger">
+
+<p>The use of generative AI is forbidden in this assignment. All submissions will be manually inspected, and students found to have used generative AI will be awarded 0 for the assignment.</p>
+
+</aside>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <style>
+    pre>mark {
+      margin: -.2em;
+    }
+  </style>
+  <aside class="note">
+    <p>You may find the <a href="https://youtu.be/XuHdQA53jU8">Assignment 2 Overview Video</a> to be a good starting point:</p>
+    <iframe width="974" height="415" src="./COMP1521 26T3 — Assignment 2_ Forest file archiver_files/XuHdQA53jU8.html" title="COMP1521 26T3 Assignment 2 Overview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen=""></iframe>
+</aside>
+
+  <!-- =============================================================== -->
+  <h2 id="contents">Contents</h2>
+  <ul>
+    <li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#aims">Aims</a>
+    </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#the-task">The Task</a>
+      <ul>
+        <li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#getting-started">Getting Started</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-0">Subset 0</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-1">Subset 1</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-2">Subset 2</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-3">Subset 3</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#handling-errors">Handling Errors</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#reference-implementation">Reference implementation</a>
+      </li></ul>
+    </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#tree-format">The tree and leaf format</a>
+    </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#leaf-hash">The leaf hash</a>
+    </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assumptions-clarifications">Assumptions and Clarifications</a>
+    </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment">Assessment</a>
+      <ul>
+        <li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment--testing">Testing</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment--submission">Submission</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment--due-date">Due Date</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment--assessment-scheme">Assessment Scheme</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment--intermediate-versions-of-work">Intermediate Versions of Work</a>
+        </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assignment-conditions">Assignment Conditions</a>
+      </li></ul>
+    </li><li><a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#change-log">Change Log</a>
+  </li></ul>
+
+  <!-- =============================================================== -->
+  <h2 id="aims">Aims</h2>
+  <ul>
+    
+    <li> building a concrete understanding of file system objects;
+      
+    </li><li> practising C, including byte-level operations and robust error handling;
+      
+    </li><li> understanding file operations, including input-output operations on binary data
+      
+  </li></ul>
+
+
+  <!-- =============================================================== -->
+  <h2 id="the-task">The Task</h2>
+  <p>
+    A file archive is a single file which can contain
+    the contents, names and other metadata of multiple files.
+    These can make backup and transport of files more convenient,
+    and can often make compression more efficient.
+    We often refer to tools that can create or manipulate these as
+    <em><a href="https://en.wikipedia.org/wiki/File_archiver">file archivers</a></em>.
+
+  </p><p>
+    There are a vast number of archive formats:
+    on *nix-like systems, <cite><a title="man 5 tar" href="http://man7.org/linux/man-pages/man5/tar.5.html">tar</a></cite> is common;
+    whereas on Windows, <a href="https://en.wikipedia.org/wiki/Zip_(file_format)">Zip</a> is common.
+    Wikipedia's <a href="https://en.wikipedia.org/wiki/List_of_archive_formats">list of archive formats</a>
+    is a marvellous rabbit-hole to explore.
+
+  </p><p>
+    In this assignment,
+    you will be implementing <strong>forest</strong>,
+    a file archiver for the tree format.
+
+  </p><p>
+    The tree format is made up of one or more leafs;
+    where a leaf records one file system object;
+    This format is described in more detail below.
+
+  </p><p>
+    A complete implementation of forest can
+
+  </p><ul>
+    <li>
+      <p>
+        list the path names of each object in a tree
+        <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-0">subset 0</a>)</small>;
+
+    </p></li><li>
+      <p>
+        list the permissions of each object in a tree
+        <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-0">subset 0</a>)</small>;
+
+    </p></li><li>
+      <p>
+        list the size (number of bytes) of files in a tree
+        <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-0">subset 0</a>)</small>;
+
+    </p></li><li>
+      <p>
+        check the leaf magic number
+        <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-0">subset 0</a>)</small>;
+
+    </p></li><li>
+      <p>
+        extract files from a tree
+        <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-1">subset 1</a>)</small>;
+
+    </p></li><li>
+      <p>
+        check a tree for integrity,
+        by checking leaf hashes;
+        <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-1">subset 1</a>)</small>;
+
+    </p></li><li>
+      <p>
+        set the file permissions of files extracted from a tree
+        <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-1">subset 1</a>)</small>;
+
+    </p></li><li>
+      <p>
+        create a tree from a list of files
+        <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-2">subset 2</a>)</small>;
+
+    </p></li><li>
+      <p>
+        list, extract, and create trees that include directories
+        <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-3">subset 3</a>)</small>; and
+
+    </p></li><li>
+      <p>
+        extract, and create trees in 7-bit and 6-bit formats
+        <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-3">subset 3</a>)</small>.
+  </p></li></ul>
+
+
+  <!-- =============================================================== -->
+  <h3 id="getting-started">Getting Started</h3>
+  <p>
+    Create a new directory for this assignment,
+    change to this directory,
+    and fetch the provided code by running
+
+  </p><pre is="tty"><kbd is="sh">mkdir -m 700 forest</kbd>
+<kbd is="sh">cd forest</kbd>
+<kbd is="sh">1521 fetch forest</kbd>
+</pre>
+
+  <p>
+    If you're not working at CSE,
+    you can download the provided files
+    as a <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/provided.zip">zip file</a>
+    or a <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/provided.tar">tar file</a>.
+
+  </p><p>
+    This will give you the following files:
+
+  </p><dl class="row">
+
+    <dt class="col-3"><code>forest.c</code></dt>
+    <dd class="col-9">
+      is the only file you need to change:
+      it contains partial definitions of four functions,
+      <em>list_tree</em>, <em>check_tree</em>,
+      <em>extract_tree</em>, and <em>create_tree</em>,
+      to which you need to add code to complete the assignment.
+      You can also add your own functions to this file.
+
+    </dd><dt class="col-3"><code>forest_main.c</code></dt>
+    <dd class="col-9">
+      contains a <em>main</em>,
+      which has code to parse the command line arguments,
+      and which then calls one of
+      <em>list_tree</em>,
+      <em>extract_tree</em>,
+      <em>create_tree</em>, or
+      <em>check_tree</em>,
+      depending on the command line arguments given to forest.
+      <em class="text-danger">Do not change this file.</em>
+
+    </dd><dt class="col-3">
+      <code>forest.h</code>
+    </dt>
+    <dd class="col-9">
+      contains shared function declarations
+      and some useful constant definitions.
+      <em class="text-danger">Do not change this file.</em>
+
+    </dd><dt class="col-3"><code>forest_hash.c</code></dt>
+    <dd class="col-9">
+      contains the <em>tree_hash</em> function;
+      you should call this function to calculate hashes for subset 1.
+      <em class="text-danger">Do not change this file.</em>
+
+    </dd><dt class="col-3"><code>forest_6_bit.c</code></dt>
+    <dd class="col-9">
+      contains the <em>tree_to_6_bit</em>
+      and <em>tree_from_6_bit</em> functions.
+      You should call these to implement the 6-bit format for subset 3.
+      <em class="text-danger">Do not change this file.</em>
+
+    </dd><dt class="col-3"><code>forest.mk</code></dt>
+    <dd class="col-9">
+      contains a Makefile fragment for forest.
+  </dd></dl>
+
+  <p>
+    You can run <cite><a title="man 1 make" href="https://manpages.debian.org/jump?q=make.1">make</a></cite> to compile the provided code;
+    and you should be able to run the result.
+
+  </p><pre is="tty"><kbd is="sh">make</kbd>
+dcc -c -o forest.o forest.c
+dcc -c -o forest_main.o forest_main.c
+dcc -c -o forest_hash.o forest_hash.c
+dcc -c -o forest_6_bit.o forest_6_bit.c
+dcc forest.o forest_main.o forest_hash.o forest_6_bit.o -o forest
+<kbd is="sh">./forest -l a.tree</kbd>
+list_tree called to list tree: 'a.tree'
+</pre>
+
+
+  <!-- <p>
+    If you are running <cite>make(1)</cite> without <code>dcc</code> available you can compile like this:
+
+  <pre is="tty">
+    <kbd is="sh">make CC=gcc</kbd>
+    gcc -c -o forest.o forest.c
+    gcc -c -o forest_main.o forest_main.c
+    gcc -c -o forest_hash.o forest_hash.c
+    gcc -c -o forest_6_bit.o forest_6_bit.c
+    gcc forest.o forest_main.o forest_hash.o forest_6_bit.o -o forest
+    <kbd is="sh">./forest -l a.tree</kbd>
+    list_tree called to list tree: 'a.tree'
+  </pre>
+
+  <aside class="warning">
+    <p>
+      <code>dcc</code> does more error checking than <cite>gcc(1)</cite>
+
+    <p>
+      Make sure your program can compile with <code>dcc</code>
+  </aside> -->
+
+  <p>
+    If you don't have <cite><a title="man 1 make" href="https://manpages.debian.org/jump?q=make.1">make</a></cite> available you can compile like this:
+
+  </p><pre is="tty"><kbd is="sh">dcc forest.c forest_main.c forest_hash.c forest_6_bit.c -o forest</kbd>
+<kbd is="sh">./forest -C b.tree</kbd>
+check_tree called to check tree: 'a.tree'
+</pre>
+
+<!--
+  <p>
+    If you don't have <cite>make(1)</cite> or <code>dcc</code> available you can compile like this:
+
+  <pre is="tty">
+    <kbd is="sh">gcc -Wall forest.c forest_main.c forest_hash.c forest_6_bit.c -o forest</kbd>
+    <kbd is="sh">./forest -C b.tree</kbd>
+    check_tree called to check tree: 'a.tree'
+  </pre>
+
+  <aside class="warning">
+    <p>
+      <code>dcc</code> does more error checking than <cite>gcc(1)</cite>
+
+    <p>
+      Make sure your program can compile with <code>dcc</code>
+  </aside>
+-->
+  <p>
+    You may optionally create extra <code>.c</code> or <code>.h</code> files.
+
+  </p><p>
+    You should run <cite><a title="man 1 unzip" href="https://manpages.debian.org/jump?q=unzip.1">unzip</a></cite> to get a directory called <code>examples/</code>
+    full of <var>.tree</var> files to test your program against.
+
+  </p><pre is="tty"><kbd is="sh">unzip examples.zip</kbd>
+</pre>
+
+
+  <!-- =============================================================== -->
+  <h3 id="subset-0">Subset 0</h3>
+  <p>
+    To complete subset 0,
+    you need to implement code that can
+  </p><ul>
+    <li> print a list of the contents of a tree, and
+    </li><li> print a detailed list of the contents of a tree.
+  </li></ul>
+
+
+  <h4>Subset 0: Print a list of the contents of a tree</h4>
+  <p>
+    Given the <code>-l</code> command-line argument,
+    <em>forest</em> should print the path names of
+    the files/directories in a tree.
+
+  </p><p>
+    For example:
+
+  </p><pre is="tty"><kbd is="sh_comment">List each item in the tree called text_file.tree, which is in the examples directory</kbd>
+<kbd is="sh">./forest -l examples/text_file.tree</kbd>
+hello.txt
+<kbd is="sh_comment">List each item in the tree called 4_files.tree, which is in the examples directory</kbd>
+<kbd is="sh">./forest -l examples/4_files.tree</kbd>
+256.bin
+hello.txt
+last_goodbye.txt
+these_days.txt
+<kbd is="sh_comment">List each item in the tree called hello_world.tree, which is in the examples directory</kbd>
+<kbd is="sh">./forest -l examples/hello_world.tree</kbd>
+hello.c
+hello.cpp
+hello.d
+hello.go
+hello.hs
+hello.java
+hello.js
+hello.pl
+hello.py
+hello.rs
+hello.s
+hello.sh
+hello.sql
+</pre>
+
+
+  <!-- =============================================================== -->
+  <h4>Subset 0: Print a detailed list of the contents of a tree</h4>
+  <p>
+    Given the <code>-L</code> command-line argument,
+    <em>forest</em> should,
+    for each file in the specified tree, print:
+
+  </p><ol>
+    <li> the file/directory permissions,
+    </li><li> the leaf format which will be one of 6, 7 or 8 (the default),
+    </li><li> the file/directory size in bytes, and
+    </li><li> the file/directory path name.
+  </li></ol>
+
+<pre is="tty"><kbd is="sh">./forest -L examples/text_file.tree</kbd>
+-rw-r--r--  8     56  hello.txt
+<kbd is="sh_comment">List the details of each item in the tree called 4_files.tree, which is in the examples directory</kbd>
+<kbd is="sh">./forest -L examples/4_files.tree</kbd>
+-rw-r--r--  8    256  256.bin
+-rw-r--r--  8     56  hello.txt
+-r--r--r--  8    166  last_goodbye.txt
+-r--rw-r--  8    148  these_days.txt
+<kbd is="sh_comment">List the details of each item in the tree called hello_world.tree, which is in the examples directory</kbd>
+<kbd is="sh">./forest -L examples/hello_world.tree</kbd>
+-rw-r--r--  8     93  hello.c
+-rw-r--r--  8     82  hello.cpp
+-rw-r--r--  8     65  hello.d
+-rw-r--r--  8     77  hello.go
+-rw-r--r--  8     32  hello.hs
+-rw-r--r--  8    117  hello.java
+-rw-r--r--  8     30  hello.js
+-rwxr-xr-x  8     47  hello.pl
+-rwxr-xr-x  8    103  hello.py
+-rw-r--r--  8     45  hello.rs
+-rw-r--r--  8    123  hello.s
+-rwxr-xr-x  8     41  hello.sh
+-rw-r--r--  8     24  hello.sql
+</pre>
+
+  <aside class="hint">
+    <ul class="list-unstyled">
+
+      <li>
+        <p>
+          <code>forest_main.c</code> calls
+          the function <em>list_tree</em> in <code>forest.c</code>
+          when either of the <code>-l</code> or <code>-L</code> options
+          are specified on the command line.
+
+      </p></li><li>
+        <p>
+          Add code to <em>list_tree</em> in <code>forest.c</code>.
+
+      </p></li><li>
+        <p>
+          Use <cite><a title="man 3 fopen" href="http://man7.org/linux/man-pages/man3/fopen.3.html">fopen</a></cite> to open the tree file.
+
+      </p></li><li>
+        <p>
+          Use <cite><a title="man 3 fgetc" href="http://man7.org/linux/man-pages/man3/fgetc.3.html">fgetc</a></cite> to read bytes.
+
+      </p></li><li>
+        <p>
+          Make sure you understand the <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#tree-format">leaf format specification</a> below
+
+      </p></li><li>
+        <p>
+          Use C bitwise operations such as <code>&lt;&lt;</code> <code>&amp;</code> and <code>|</code> to combine bytes
+          into integers.
+
+      </p></li><li>
+        <p>
+          Think carefully about the functions you can construct to avoid repeated code.
+
+      </p></li><li>
+        <p>
+          Review
+          <!-- <code>print_borts_file.c</code> from our <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/tut/08/answers">week 8 tutorial</a> and -->
+          <code>print_bytes.c</code> from our <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/lab/08/questions">week 8 lab</a>.
+
+      </p></li><li>
+        <p>
+          <cite><a title="man 3 fseek" href="http://man7.org/linux/man-pages/man3/fseek.3.html">fseek</a></cite> can be used to skip over parts of the tree file,
+          but you can also use a loop and <cite><a title="man 3 fgetc" href="http://man7.org/linux/man-pages/man3/fgetc.3.html">fgetc</a></cite>
+
+    </p></li></ul>
+  </aside>
+
+  <aside class="note">
+    <ul class="list-unstyled">
+
+      <li>
+        <p>
+          The order you list files is the order they appear in the tree.
+
+      </p></li><li>
+        <p>
+          tree files do not necessarily end with .tree.
+          This has been done with the provided example files purely as a convenience.
+
+      </p></li><li>
+        <p>
+          Hint: use a format like <code>"%5lu"</code> to print the file size.
+
+    </p></li></ul>
+  </aside>
+
+
+  <!-- =============================================================== -->
+  <h3 id="subset-1">Subset 1</h3>
+  <p>
+    To complete subset 1,
+    you need to implement code that can
+  </p><ul>
+    <li> check the contents of a tree, and
+    </li><li> extract files from a tree.
+  </li></ul>
+
+  <h4>Subset 1: Check the contents of a tree</h4>
+  <p>
+    Given the <code>-C</code> command-line argument,
+    <em>forest</em> should check the hashes in the specified tree.
+    For example:
+
+</p><pre is="tty"><kbd is="sh_comment">Check the tree called 4_files.tree, which is in the examples directory</kbd>
+<kbd is="sh">./forest -C examples/4_files.tree</kbd>
+256.bin - correct hash
+hello.txt - correct hash
+last_goodbye.txt - correct hash
+these_days.txt - correct hash
+<kbd is="sh_comment">Check the tree called examples/hello_world.bad_hash.tree, which is in the examples directory</kbd>
+<kbd is="sh">./forest -C examples/hello_world.bad_hash.tree</kbd>
+hello.c - correct hash
+hello.cpp - correct hash
+hello.d - correct hash
+hello.go - correct hash
+hello.hs - correct hash
+hello.java - correct hash
+hello.js - correct hash
+hello.pl - correct hash
+hello.py - correct hash
+hello.rs - correct hash
+hello.s - correct hash
+hello.sh - correct hash
+hello.sql - incorrect hash 0x19 should be 0x43
+</pre>
+
+  <p>
+    It should also check the leaf magic number (first byte) of each leaf,
+    and emit an error if it is incorrect.
+
+</p><pre is="tty"><kbd is="sh_comment">Check the tree called text_file.bad_magic.tree, which is in the examples directory</kbd>
+<kbd is="sh">./forest -C examples/text_file.bad_magic.tree</kbd>
+error: incorrect first leaf byte: 0x39 should be 0x63
+</pre>
+
+  <aside class="hint">
+    <ul class="list-unstyled">
+
+      <li>
+        <p>
+          <code>forest_main.c</code> calls
+          the function <em>check_tree</em> in <code>forest.c</code>
+          when the <code>-C</code> option is specified on the command line.
+
+      </p></li><li>
+        <p>
+          Add code to <code>check_tree</code> in <code>forest.c</code>.
+
+      </p></li><li>
+        <p>
+          The correct and incorrect hash messages in this part of subset 1
+          are part of the normal output of forest, and so should be to
+          <code>stdout</code>.
+
+      </p></li><li>
+        <p>
+          Call <code>tree_hash</code> to calculate hash values.
+
+      </p></li><li>
+        <p>
+          Think carefully about the functions you can construct to avoid repeated code.
+
+      </p></li><li>
+        <p>
+          For example, for every byte you read with <code>fgetc</code> you need to
+          call <code>tree_hash</code> to calculate a new hash value, so write a function
+          that does both. Hint: have the function take a pointer to a hash value which it can update.
+
+    </p></li></ul>
+  </aside>
+
+
+  <!-- =============================================================== -->
+  <h4>Subset 1: Extract files from a tree</h4>
+  <p>
+    Given the <code>-x</code> command-line argument,
+    <em>forest</em> should
+    extract the files in the specified tree.
+
+  </p><p>
+    It should set file permissions for extracted files to the permissions specified in the tree.
+
+</p><pre is="tty"><kbd is="sh_comment">forest will extract files into the current working directory.</kbd>
+<kbd is="sh_comment">So as not to clutter your assignment directory, you should create a</kbd>
+<kbd is="sh_comment">temporary directory, 'tmp', and change to it. Once in that directory,</kbd>
+<kbd is="sh_comment">both your forest program and 'examples/' will be in its parent</kbd>
+<kbd is="sh_comment">directory --- hence the use of '..' in these path names.</kbd>
+
+<kbd is="sh_comment">Make a directory called tmp.</kbd>
+<kbd is="sh">mkdir -p tmp/</kbd>
+<kbd is="sh_comment">Change into the tmp directory.</kbd>
+<kbd is="sh">cd tmp/</kbd>
+<kbd is="sh_comment">Forcibly remove all files inside the tmp directory.</kbd>
+<kbd is="sh">rm -f * .*</kbd>
+<kbd is="sh_comment">Use your program to extract the contents of text_file.tree.</kbd>
+<kbd is="sh">../forest -x ../examples/text_file.tree</kbd>
+Extracting: hello.txt
+<kbd is="sh_comment">Show the contents of hello.txt in the terminal.</kbd>
+<kbd is="sh_comment">You can manually open it in your text editor too, if you like.</kbd>
+<kbd is="sh">cat hello.txt</kbd>
+Hello COMP1521
+I hope you are enjoying this assignment.
+<kbd is="sh_comment">Forcibly remove all files inside the tmp directory.</kbd>
+<kbd is="sh">rm -f * .*</kbd>
+<kbd is="sh_comment">Use your program to extract the contents of hello_world.tree.</kbd>
+<kbd is="sh">../forest -x ../examples/hello_world.tree</kbd>
+Extracting: hello.c
+Extracting: hello.cpp
+Extracting: hello.d
+Extracting: hello.go
+Extracting: hello.hs
+Extracting: hello.java
+Extracting: hello.js
+Extracting: hello.pl
+Extracting: hello.py
+Extracting: hello.rs
+Extracting: hello.s
+Extracting: hello.sh
+Extracting: hello.sql
+<kbd is="sh_comment">Show the first 25 lines from the extracted files to confirm the extraction was successful.</kbd>
+<kbd is="sh">cat $(echo * | sort) | head -n 25</kbd>
+extern int puts(const char *s);
+
+int main(void)
+{
+    puts("Hello, World!");
+    return 0;
+}
+#include &lt;iostream&gt;
+
+int main () {
+  std::cout &lt;&lt; "Hello, world!" &lt;&lt; std::endl;
+}
+import std.stdio;
+
+void main() {
+    writeln("Hello, world!");
+}
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, World!")
+}
+main = putStrLn "Hello, World!"
+<kbd is="sh_comment">Forcibly remove all files inside the tmp directory</kbd>
+<kbd is="sh">rm -f * .*</kbd>
+<kbd is="sh_comment">Use your program to extract the contents of meta.tree.</kbd>
+<kbd is="sh">../forest -x ../examples/meta.tree</kbd>
+Extracting: 1_file.subdirectory.7-bit.tree
+Extracting: 1_file.subdirectory.tree
+Extracting: 2_files.7-bit.tree
+Extracting: 2_files.tree
+Extracting: 3_files.7-bit.tree
+Extracting: 3_files.bad_hash.tree
+Extracting: 3_files.bad_magic.tree
+Extracting: 3_files.tree
+Extracting: 3_files.subdirectory.7-bit.tree
+Extracting: 3_files.subdirectory.bad_hash.tree
+Extracting: 3_files.subdirectory.bad_magic.tree
+Extracting: 3_files.subdirectory.tree
+Extracting: 4_files.tree
+Extracting: all_the_modes.subdirectory.7-bit.tree
+Extracting: all_the_modes.subdirectory.tree
+Extracting: all_three_formats.6-bit.tree
+Extracting: binary_file.tree
+Extracting: hello_world.7-bit.tree
+Extracting: hello_world.bad_hash.tree
+Extracting: hello_world.bad_magic.tree
+Extracting: hello_world.tree
+Extracting: lecture_code.subdirectory.7-bit.tree
+Extracting: lecture_code.subdirectory.tree
+Extracting: small.6-bit.tree
+Extracting: small.7-bit.tree
+Extracting: small.tree
+Extracting: text_file.7-bit.tree
+Extracting: text_file.bad_hash.tree
+Extracting: text_file.bad_magic.tree
+Extracting: text_file.tree
+Extracting: tiny.6-bit.tree
+Extracting: tiny.7-bit.tree
+Extracting: tiny.tree
+<kbd is="sh_comment">Show the first 10 items in this directory alphabetically to check extraction was successful.</kbd>
+<kbd is="sh">ls -1 $(echo * | sort) | head</kbd>
+1_file.subdirectory.tree
+1_file.subdirectory.compressed.tree
+2_files.tree
+2_files.compressed.tree
+3_files.bad_hash.tree
+3_files.bad_magic.tree
+3_files.tree
+3_files.compressed.tree
+3_files.subdirectory.bad_hash.tree
+3_files.subdirectory.bad_magic.tree
+<kbd is="sh_comment">Go back into the directory with your code.</kbd>
+<kbd is="sh">cd ../</kbd>
+<kbd is="sh_comment">Remove the tmp directory and everything inside it.</kbd>
+<kbd is="sh">rm -rf tmp/</kbd>
+</pre>
+
+  <aside class="hint">
+    <ul class="list-unstyled">
+
+      <li>
+        <p>
+      </p></li><li>
+        <p>
+          <code>forest_main.c</code> calls
+          the function <em>extract_tree</em> in <code>forest.c</code>
+          when the <code>-x</code> option is specified on the command line.
+
+      </p></li><li>
+        <p>
+          Add code to <em>extract_tree</em> in <code>forest.c</code>.
+
+      </p></li><li>
+        <p>
+          Use <cite><a title="man 3 fopen" href="http://man7.org/linux/man-pages/man3/fopen.3.html">fopen</a></cite> to open each file you are extracting.
+
+      </p></li><li>
+        <p>
+          Use <cite><a title="man 3 fputc" href="http://man7.org/linux/man-pages/man3/fputc.3.html">fputc</a></cite> to write bytes to each file.
+
+      </p></li><li>
+        <p>
+          In our <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/topic/files/slides">lectures on files</a>
+          we covered copying bytes to a file in the <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/topic/files/code/cp_fgetc.c">cp_fgetc.c</a>
+          example
+          and setting the permissions of a file in the <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/topic/files/code/chmod.c">chmod.c</a>
+          example.
+
+    </p></li></ul>
+  </aside>
+
+  <aside class="note">
+    <ul class="list-unstyled">
+
+      <li>
+        <p>
+          forest should overwrite an files that already exist.
+
+      </p></li><li>
+        <p>
+          forest can leave already extracted/partially extracted files in the event of an error.
+
+    </p></li></ul>
+  </aside>
+
+
+  <!-- =============================================================== -->
+  <h3 id="subset-2">Subset 2</h3>
+  <p>
+    To complete subset 2,
+    you need to implement code that can
+  </p><ul>
+    <li> create a tree from a list of files.
+  </li></ul>
+
+  <h4>Subset 2: Create a tree from a list of files</h4>
+  <p>
+    Given the <code>-c</code> command-line argument, <em>forest</em> should
+    create a tree containing the specified files.
+
+</p><pre is="tty"><kbd is="sh_comment">These "echo" lines show you how to create these test files and what their contents are.</kbd>
+
+<kbd is="sh_comment">Create a file called hello.txt with the contents "hello".</kbd>
+<kbd is="sh">echo hello &gt;hello.txt</kbd>
+<kbd is="sh_comment">Create a file called hola.txt with the contents "hola".</kbd>
+<kbd is="sh">echo hola &gt;hola.txt</kbd>
+<kbd is="sh_comment">Create a file called hi.txt with the contents "hi".</kbd>
+<kbd is="sh">echo hi &gt;hi.txt</kbd>
+<kbd is="sh_comment">Set the permissions of these files to 644 (octal permission string (equivalent to rw-r--r--)).</kbd>
+<kbd is="sh_comment">When you list the contents of the tree, the permissions should match this.</kbd>
+<kbd is="sh">chmod 644 hello.txt hola.txt hi.txt</kbd>
+<kbd is="sh_comment">Create a tree called selamat.tree with the files hello.txt, hola.txt, and hi.txt.</kbd>
+<kbd is="sh">./forest -c selamat.tree hello.txt hola.txt hi.txt</kbd>
+Adding: hello.txt
+Adding: hola.txt
+Adding: hi.txt
+<kbd is="sh_comment">List the contents of selamat.tree.</kbd>
+<kbd is="sh">./forest -L selamat.tree</kbd>
+-rw-r--r-- 8 6 hello.txt
+-rw-r--r-- 8 5 hola.txt
+-rw-r--r-- 8 3 hi.txt
+<kbd is="sh_comment">Make a directory called tmp.</kbd>
+<kbd is="sh">mkdir -p tmp/</kbd>
+<kbd is="sh_comment">Change into the tmp directory.</kbd>
+<kbd is="sh">cd tmp/</kbd>
+<kbd is="sh_comment">Forcibly remove all files inside the tmp directory.</kbd>
+<kbd is="sh">rm -f * .*</kbd>
+<kbd is="sh_comment">Use your program to extract the contents of selamat.tree.</kbd>
+<kbd is="sh">../forest -x ../selamat.tree</kbd>
+Extracting: hello.txt
+Extracting: hola.txt
+Extracting: hi.txt
+<kbd is="sh_comment">Check that the extracted file hello.txt is the same as the source file ../hello.txt.</kbd>
+<kbd is="sh">diff -s ../hello.txt hello.txt</kbd>
+Files ../hello.txt and hello.txt are identical
+<kbd is="sh_comment">Check that the extracted file hola.txt is the same as the source file ../hola.txt.</kbd>
+<kbd is="sh">diff -s ../hola.txt hola.txt</kbd>
+Files ../hola.txt and hola.txt are identical
+<kbd is="sh_comment">Check that the extracted file hi.txt is the same as the source file ../hi.txt.</kbd>
+<kbd is="sh">diff -s ../hi.txt hi.txt</kbd>
+Files ../hi.txt and hi.txt are identical
+<kbd is="sh_comment">Go back into the directory with your code.</kbd>
+<kbd is="sh">cd ../</kbd>
+<kbd is="sh_comment">Remove the tmp directory and everything inside it.</kbd>
+<kbd is="sh">rm -rf tmp/</kbd>
+</pre>
+
+  <p>
+    It is also possible to append leafs
+    to an existing tree file
+    using the <code>-a</code> command-line option.
+    For example:
+
+</p><pre is="tty"><kbd is="sh">./forest -a bonjour.tree hello.txt</kbd>
+Adding: hello.txt
+<kbd is="sh">./forest -L bonjour.tree</kbd>
+-rw-r--r--  8      6  hello.txt
+<kbd is="sh">./forest -a bonjour.tree hola.txt hi.txt</kbd>
+Adding: hola.txt
+Adding: hi.txt
+<kbd is="sh">./forest -L bonjour.tree</kbd>
+-rw-r--r--  8      6  hello.txt
+-rw-r--r--  8      5  hola.txt
+-rw-r--r--  8      3  hi.txt
+</pre>
+
+  <aside class="hint">
+    <ul class="list-unstyled">
+
+      <li>
+        <p>
+          <code>forest_main.c</code> calls
+          the function <em>create_tree</em> in <code>forest.c</code>
+          when either of the <code>-c</code> or <code>-a</code> options
+          are specified on the command line.
+
+      </p></li><li>
+        <p>
+          Add code to <em>create_tree</em> in <code>forest.c</code>.
+
+      </p></li><li>
+        <p>
+          Use <cite><a title="man 3 fopen" href="http://man7.org/linux/man-pages/man3/fopen.3.html">fopen</a></cite> and <cite><a title="man 3 fputc" href="http://man7.org/linux/man-pages/man3/fputc.3.html">fputc</a></cite> to create the new tree.
+
+      </p></li><li>
+        <p>
+          In our <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/topic/files/code/slides">lectures on files</a>
+          we covered obtaining file metadata including its size and mode (permissions) in the <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/topic/files/code/stat.c">stat.c</a> example.
+
+    </p></li></ul>
+  </aside>
+
+  <aside class="note">
+    <ul class="list-unstyled">
+
+      <li>
+        <p>
+          You must add/store files in the order they are given.
+
+    </p></li></ul>
+  </aside>
+
+
+  <!-- =============================================================== -->
+  <h3 id="subset-3">Subset 3</h3>
+  <p>
+    To complete subset 3,
+    you need to implement code that can
+  </p><ul>
+    <li> create a tree from a list of files and directories,
+    </li><li> extract directories from a tree, and
+    </li><li> manipulate 6-bit and 7-bit storage formats.
+  </li></ul>
+
+  <h4>Subset 3: Create a tree from a list of files and directories</h4>
+  <p>
+    Given the <code>-c</code> command-line argument, <em>forest</em> should
+    be able to add files in sub-directories.
+    For example:
+
+</p><pre is="tty"><kbd is="sh_comment">Create a tree called a.tree with the file "hello.txt" that is contained within 2 levels of directories.</kbd>
+<kbd is="sh">./forest -c a.tree examples/2_files.d/hello.txt </kbd>
+Adding: examples
+Adding: examples/2_files.d
+Adding: examples/2_files.d/hello.txt
+</pre>
+
+  <p>
+    If a directory is specified when creating a tree,
+    <em>forest</em> should add the entire directory tree to the tree.
+
+</p><pre is="tty"><kbd is="sh_comment">Create a tree called a.tree with *all* the contents within the directory "3_files.subdirectory.d"</kbd>
+<kbd is="sh_comment">which is in the "examples" directory.</kbd>
+<kbd is="sh">./forest -c a.tree examples/3_files.subdirectory.d</kbd>
+Adding: examples
+Adding: examples/3_files.subdirectory.d
+Adding: examples/3_files.subdirectory.d/goodbye
+Adding: examples/3_files.subdirectory.d/goodbye/last_goodbye.txt
+Adding: examples/3_files.subdirectory.d/hello
+Adding: examples/3_files.subdirectory.d/hello/hello.txt
+Adding: examples/3_files.subdirectory.d/these_days.txt
+</pre>
+
+  <p>
+    Given the <code>-L</code> command-line argument and a tree containing directories,
+    <em>forest</em> should be able to list files and directories.
+    For example:
+
+</p><pre is="tty"><kbd is="sh">./forest -L examples/1_file.subdirectory.tree </kbd>
+drwxr-xr-x  8      0  hello
+-rw-r--r--  8     56  hello/hello.txt
+</pre>
+
+  <aside class="hint">
+    <ul class="list-unstyled">
+
+      <li>
+        <p>
+          In our <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/topic/files/slides">lectures on files</a>
+          we covered listing a directory's contents in the <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/topic/files/code/list_directory.c">list_directory.c</a> example.
+
+      </p></li><li>
+        <p>
+          Traversing a directory tree is challenging and can be done in several ways.
+
+    </p></li></ul>
+  </aside>
+
+  <aside class="note">
+    <ul class="list-unstyled">
+
+      <li>
+        <p>
+          The forest reference implementation will add subdirectories in alphabetical order.
+          You do not need to match this behaviour:
+          your implementation can add subdirectories in any order.
+
+      </p></li><li>
+        <p>
+          If a file in a different directory is added to a tree, then
+          the directories in the path need to be added to the tree.
+
+    </p></li></ul>
+  </aside>
+
+
+  <!-- =============================================================== -->
+  <h4>Subset 3: Extract directories from a tree</h4>
+  <p>
+    Given the <code>-x</code> command-line argument,
+    and a tree containing directories,
+    <em>forest</em> should be able to extract files and directories.
+    For example:
+
+</p><pre is="tty"><kbd is="sh">./forest -x examples/3_files.subdirectory.tree </kbd>
+Creating directory: goodbye
+Extracting: goodbye/last_goodbye.txt
+Creating directory: hello
+Extracting: hello/hello.txt
+Extracting: these_days.txt
+</pre>
+  <p>
+
+  </p><aside class="hint">
+    <ul class="list-unstyled">
+
+      <li>
+        <p>
+          In our <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/topic/files/slides">lectures on files</a>
+          we covered creating a directory in the <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/topic/files/code/mkdir.c">mkdir.c</a> example
+
+    </p></li></ul>
+  </aside>
+
+  <aside class="note">
+    <p>
+      When extracting a tree with directories,
+      the directory needs to be created if it does not already exist,
+      and its permissions need to be set
+      to those specified in the tree.
+  </p></aside>
+
+
+  <!-- =============================================================== -->
+  <h4>Subset 3: Manipulate 6-bit and 7-bit storage formats</h4>
+  <p>
+    The <code>-7</code> and <code>-6</code> options
+    allow leafs to be created in 7-bit and 6-bit format.
+    For example:
+
+</p><pre is="tty"><kbd is="sh">./forest -7 -c seven.tree hello.txt</kbd>
+Adding: hello.txt
+<kbd is="sh">./forest -L seven.tree</kbd>
+-rw-r--r-- 7 6 hello.txt
+<kbd is="sh">./forest -6 -c six.tree hola.txt hi.txt</kbd>
+Adding: hola.txt
+Adding: hi.txt
+<kbd is="sh">./forest -L six.tree</kbd>
+-rw-r--r--  6      5  hola.txt
+-rw-r--r--  6      3  hi.txt
+</pre>
+
+  <p>
+    It is possible for trees to contain leafs in multiple formats.
+    For example:
+
+</p><pre is="tty"><kbd is="sh">./forest -a mixed.tree hello.txt</kbd>
+Adding: hello.txt
+<kbd is="sh">./forest -L mixed.tree</kbd>
+-rw-r--r--  8      6  hello.txt
+<kbd is="sh">./forest -7 -a mixed.tree hi.txt</kbd>
+Adding: hi.txt
+<kbd is="sh">./forest -L mixed.tree</kbd>
+-rw-r--r--  8      6  hello.txt
+-rw-r--r--  7      3  hi.txt
+<kbd is="sh">./forest -6 -a mixed.tree hola.txt</kbd>
+Adding: hola.txt
+<kbd is="sh">./forest -L mixed.tree</kbd>
+-rw-r--r--  8      6  hello.txt
+-rw-r--r--  7      3  hi.txt
+-rw-r--r--  6      5  hola.txt
+</pre>
+
+  <p>
+    Your code should handle creating, listing, checking, and extracting trees in 7-bit and 6-bit format.
+
+  </p><p>
+    Your code should produce an error if asked to create a leaf
+    containing bytes which cannot be encoded in the specified format.
+    For example:
+
+</p><pre is="tty"><kbd is="sh">echo Hello &gt;Hello.txt</kbd>
+<kbd is="sh">./forest -6 -c broken.tree Hello.txt</kbd>
+error: byte 0x48 can not be represented in 6-bit format
+</pre>
+
+  <aside class="hint">
+    <p>
+      The functions <em>tree_to_6_bit</em> and <em>tree_from_6_bit</em>
+      in <code>forest_6_bit.c</code> convert 8-bit values to and from 6-bit format.
+  </p></aside>
+
+
+  <!-- =============================================================== -->
+  <h2 id="handling-errors">Handling Errors</h2>
+
+  <p>
+    Error checking is an important part of this assignment.
+    Automarking will test error handling.
+
+  </p><p>
+    Error messages should be one line (only) and be written to <code>stderr</code> (not <code>stdout</code>).
+
+  </p><p>
+    <em>forest</em> should <code>exit</code> with status 1 after an error.
+
+  </p><p>
+    <em>forest</em> should check all file operations for errors.
+
+  </p><p>
+    As much as possible match the reference implementation error messages exactly.
+
+  </p><p>
+    The reference implementation uses <cite><a title="man 3 perror" href="http://man7.org/linux/man-pages/man3/perror.3.html">perror</a></cite> to report errors
+    from file operations and other system calls.
+
+  </p><p>
+    It is not necessary to remove files and directories already created or partially created
+    when an error occurs.
+
+  </p><p>
+    You may extract a file or directory from leaf before
+    determining if the leaf hash is correct.
+
+  </p><p>
+    You can extract previous file or directory from a leaf.
+
+  </p><p>
+    Where multiple errors messages could be produced, for example,
+    if two non-existent files are specified to be added to a tree,
+    <em>forest</em> may produce any one of the error messages.
+
+
+    <!-- =============================================================== -->
+  </p><h3 id="reference-implementation">Reference implementation</h3>
+  <p>
+    A reference implementation is
+    a common, efficient, and effective method
+    to provide or define an operational specification;
+    and it's something you will likely work with
+    after you leave UNSW.
+
+  </p><p>
+    We've provided a reference implementation,
+    <code>1521 forest</code>,
+    which you can use to find
+    the correct outputs and behaviours for any input:
+
+</p><pre is="tty"><kbd is="sh">1521 forest -L examples/tiny.6-bit.tree</kbd>
+-rw-r--r--  6      0  a
+</pre>
+
+  <p>
+    Every concrete example shown below is runnable using the reference implementation;
+    run <code>1521 forest</code> instead of <code>./forest</code>.
+
+  </p><p>
+    Where any aspect of this assignment
+    is undefined in this specification,
+    you should match the behaviour
+    exhibited by the reference implementation.
+    Discovering and matching
+    the reference implementation's behaviour
+    is deliberately a part of this assignment.
+
+  </p><p>
+    If you discover what you believe to be
+    a bug in the reference implementation,
+    please report it in the class forum.
+    If it is a bug, we may fix the bug;
+    or otherwise indicate that
+    you do not need to match
+    the reference implementation's behaviour
+    in that specific case.
+
+
+    <!-- =============================================================== -->
+  </p><h2 id="tree-format">The tree and leaf format</h2>
+
+  <p>
+    trees must follow exactly the format
+    produced by the reference implementation.
+
+  </p><p>
+    A tree consists of a sequence of one or more leafs.
+    Each leaf contains the information about one file or directory.
+
+  </p><p>
+    The first byte of a tree file is the first byte of the first leaf.
+    That leaf is immediately followed by either another leaf,
+    or by the end of the tree file.
+
+    
+  </p><table class="table table-sm table-striped">
+    <thead>
+      <tr>
+        <th>name
+        </th><th>length
+        </th><th>type
+        </th><th>description
+      </th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">magic number
+        </th><td>1&nbsp;<abbr title="byte">B</abbr>
+    
+        </td><td>unsigned, 8-bit, little-endian
+        </td><td>byte 0 in every leaf must be
+          0x63 (ASCII <code>'c'</code>)
+
+      </td></tr><tr>
+        <th scope="row">leaf format
+        </th><td>1&nbsp;<abbr title="byte">B</abbr>
+    
+        </td><td>unsigned, 8-bit, little-endian
+        </td><td>byte 1 in every leaf must be one of 0x36, 0x37, 0x38
+          (ASCII <code>'6'</code>, <code>'7'</code>, <code>'8'</code>)
+
+      </td></tr><tr>
+        <th scope="row">permissions
+        </th><td>10&nbsp;<abbr title="byte">B</abbr>
+    
+        </td><td>characters
+        </td><td>bytes 2—11 are the type and permissions as a
+          <cite><a title="man 1 ls" href="https://manpages.debian.org/jump?q=ls.1">ls</a></cite>-like character array;
+          e.g., <code>"-rwxr-xr-x"</code>
+
+      </td></tr><tr>
+        <th scope="row">pathname length
+        </th><td>2&nbsp;<abbr title="byte">B</abbr>
+    
+        </td><td>unsigned, 16-bit, little-endian
+        </td><td>bytes 12—13 are an unsigned 2-byte (16-bit)
+          little-endian integer, giving the length of
+
+      </td></tr><tr>
+        <th scope="row">pathname
+        </th><td><var>pathname-length</var>
+        </td><td>characters
+        </td><td>the filename of the object in this leaf.
+
+      </td></tr><tr>
+        <th scope="row">content length
+        </th><td>6&nbsp;<abbr title="byte">B</abbr>
+    
+        </td><td>unsigned, 48-bit, little-endian
+        </td><td>the next bytes are an unsigned 6-byte (48-bit)
+          little-endian integer giving the length of the
+          file that was encoded to give
+
+      </td></tr><tr>
+        <th scope="row">content
+        </th><td><var>content-length</var> for 8-bit format, see below for other formats
+        </td><td>bytes
+        </td><td>the data of the object in this leaf.
+
+      </td></tr><tr>
+        <th scope="row">hash
+        </th><td>1&nbsp;<abbr title="byte">B</abbr>
+    
+        </td><td>unsigned, 8-bit, little-endian
+        </td><td>the last byte of a leaf is a leaf-hash
+          of all bytes of this leaf except this byte.
+    </td></tr></tbody>
+  </table>
+
+
+  <h3 id="leaf-content-encodings-subset-3-only">leaf content encodings (Subset 3 only)</h3>
+  <ul>
+    <li>
+      <p>
+        <strong>8-bit format (leaf format == 0x38</strong>
+        <em>contents</em> is an array of bytes,
+        which are exactly equivalent to
+        the bytes in the original file.
+
+    </p></li><li>
+      <p>
+        <strong>7-bit format (leaf format == 0x37)</strong>
+        <em>contents</em> is an array of bytes
+        representing packed seven-bit values,
+        with the trailing bits set to zero.
+        Every byte of the original file
+        is taken as a seven-bit value,
+        and packed as described below.
+        This format can store any seven bit value —
+        so, for example, any byte containing valid ASCII can be stored.
+      </p><p>
+        This format needs <span class="MathJax_Preview" style="color: inherit;"></span><span id="MathJax-Element-1-Frame" class="mjx-chtml MathJax_CHTML" tabindex="0" style="font-size: 113%; position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mo fence=&quot;false&quot; stretchy=&quot;false&quot;&gt;&amp;#x2308;&lt;/mo&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mn&gt;7.0&lt;/mn&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mo&gt;/&lt;/mo&gt;&lt;/mrow&gt;&lt;mn&gt;8&lt;/mn&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;&amp;#x2217;&lt;/mo&gt;&lt;mtext&gt;content-length&lt;/mtext&gt;&lt;mo fence=&quot;false&quot; stretchy=&quot;false&quot;&gt;&amp;#x2309;&lt;/mo&gt;&lt;/math&gt;" role="presentation"><span id="MJXc-Node-1" class="mjx-math" aria-hidden="true"><span id="MJXc-Node-2" class="mjx-mrow"><span id="MJXc-Node-3" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.445em; padding-bottom: 0.611em;">⌈</span></span><span id="MJXc-Node-4" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.445em; padding-bottom: 0.611em;">(</span></span><span id="MJXc-Node-5" class="mjx-mn"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.39em; padding-bottom: 0.39em;">7.0</span></span><span id="MJXc-Node-6" class="mjx-texatom"><span id="MJXc-Node-7" class="mjx-mrow"><span id="MJXc-Node-8" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.445em; padding-bottom: 0.611em;">/</span></span></span></span><span id="MJXc-Node-9" class="mjx-mn"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.39em; padding-bottom: 0.39em;">8</span></span><span id="MJXc-Node-10" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.445em; padding-bottom: 0.611em;">)</span></span><span id="MJXc-Node-11" class="mjx-mo MJXc-space2"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.169em; padding-bottom: 0.335em;">∗</span></span><span id="MJXc-Node-12" class="mjx-mtext MJXc-space2"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.39em; padding-bottom: 0.556em;">content-length</span></span><span id="MJXc-Node-13" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.445em; padding-bottom: 0.611em;">⌉</span></span></span></span><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mo fence="false" stretchy="false">⌈</mo><mo stretchy="false">(</mo><mn>7.0</mn><mrow class="MJX-TeXAtom-ORD"><mo>/</mo></mrow><mn>8</mn><mo stretchy="false">)</mo><mo>∗</mo><mtext>content-length</mtext><mo fence="false" stretchy="false">⌉</mo></math></span></span><script type="math/tex" id="MathJax-Element-1"> \lceil (7.0/8) * \text{content-length} \rceil </script> bytes.
+        7-bit format is used only in subset 3.
+
+    </p></li><li>
+      <p>
+        <strong>6-bit format (leaf format == 0x36)</strong>
+        <em>contents</em> is an array of bytes of packed six-bit values
+        where the trailing bits in the last byte are zero,
+        and which are translated using the functions <em>tree_to_6_bit</em> and <em>tree_from_6_bit</em> in
+        <em>forest_6_bit.c</em>.
+      </p><p>
+        This format cannot store all ASCII values, for example upper case letters can't be stored in 6-bit format.
+      </p><p>
+        This format needs <span class="MathJax_Preview" style="color: inherit;"></span><span id="MathJax-Element-2-Frame" class="mjx-chtml MathJax_CHTML" tabindex="0" style="font-size: 113%; position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mo fence=&quot;false&quot; stretchy=&quot;false&quot;&gt;&amp;#x2308;&lt;/mo&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mn&gt;6.0&lt;/mn&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mo&gt;/&lt;/mo&gt;&lt;/mrow&gt;&lt;mn&gt;8&lt;/mn&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;&amp;#x2217;&lt;/mo&gt;&lt;mtext&gt;content-length&lt;/mtext&gt;&lt;mo fence=&quot;false&quot; stretchy=&quot;false&quot;&gt;&amp;#x2309;&lt;/mo&gt;&lt;/math&gt;" role="presentation"><span id="MJXc-Node-14" class="mjx-math" aria-hidden="true"><span id="MJXc-Node-15" class="mjx-mrow"><span id="MJXc-Node-16" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.445em; padding-bottom: 0.611em;">⌈</span></span><span id="MJXc-Node-17" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.445em; padding-bottom: 0.611em;">(</span></span><span id="MJXc-Node-18" class="mjx-mn"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.39em; padding-bottom: 0.39em;">6.0</span></span><span id="MJXc-Node-19" class="mjx-texatom"><span id="MJXc-Node-20" class="mjx-mrow"><span id="MJXc-Node-21" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.445em; padding-bottom: 0.611em;">/</span></span></span></span><span id="MJXc-Node-22" class="mjx-mn"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.39em; padding-bottom: 0.39em;">8</span></span><span id="MJXc-Node-23" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.445em; padding-bottom: 0.611em;">)</span></span><span id="MJXc-Node-24" class="mjx-mo MJXc-space2"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.169em; padding-bottom: 0.335em;">∗</span></span><span id="MJXc-Node-25" class="mjx-mtext MJXc-space2"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.39em; padding-bottom: 0.556em;">content-length</span></span><span id="MJXc-Node-26" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R" style="padding-top: 0.445em; padding-bottom: 0.611em;">⌉</span></span></span></span><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mo fence="false" stretchy="false">⌈</mo><mo stretchy="false">(</mo><mn>6.0</mn><mrow class="MJX-TeXAtom-ORD"><mo>/</mo></mrow><mn>8</mn><mo stretchy="false">)</mo><mo>∗</mo><mtext>content-length</mtext><mo fence="false" stretchy="false">⌉</mo></math></span></span><script type="math/tex" id="MathJax-Element-2"> \lceil (6.0/8) * \text{content-length} \rceil </script> bytes.
+  </p></li></ul>
+  7-bit and 6-bit format is used only in subset 3.
+
+
+  <h3 id="packed-n-bit-encoding-subset-3-only">Packed <var>n</var>-bit encoding (Subset 3 only)</h3>
+  <p>
+    We often store smaller values inside larger types.
+    For example, the integer 42 only needs six bits;
+    but we often will store it in a full thirty-two-bit integer,
+    wasting many bits of zeroes.
+    Assuming we know how many bits the value needs,
+    we could only store the relevant bits.
+
+  </p><p>
+    For example, let's say we have three seven-bit values <em>a</em>, <em>b</em>, <em>c</em>,
+    made up of arbitrary bit-strings, and stored in eight-bit variables
+  </p><ul class="list-unstyled">
+    <li> a: <code>0b0<var>AAA</var>_<var>AAAA</var></code>,
+    </li><li> b: <code>0b0<var>BBB</var>_<var>BBBB</var></code>,
+    </li><li> c: <code>0b0<var>CCC</var>_<var>CCCC</var></code>,
+  </li></ul>
+  then a packed seven-bit encoding of these values in order would be:
+<pre>0b<var>AAAA</var>_<var>AAAB</var>_<var>BBBB</var>_<var>BBCC</var>_<var>CCCC</var>_<var>C</var>???
+</pre>
+  <p>
+    However, we have a problem: what happens to the trailing bits, which
+    don't have a value? Note that we've defined all trailing bits to be
+    zero above, which would here give:
+</p><pre>0b<var>AAAA</var>_<var>AAAB</var>_<var>BBBB</var>_<var>BBCC</var>_<var>CCCC</var>_<var>C</var>000
+</pre>
+
+
+  <h3 id="inspecting-trees-and-leafs">Inspecting trees and leafs</h3>
+  <p>
+    The <cite><a title="man 1 hexdump" href="https://manpages.debian.org/jump?q=hexdump.1">hexdump</a></cite> utility
+    can show the individual bytes of a file.
+    We can use this to inspect trees and leafs.
+
+  </p><p>
+    For example, here is a tree,
+    made up of two leafs.
+
+</p><pre is="tty"><kbd is="sh">hexdump -vC examples/2_files.tree</kbd>
+00000000 63 38 2d 72 77 2d 72 2d 2d 72 2d 2d 09 00 68 65 |c8-rw-r--r--..he|
+00000010 6c 6c 6f 2e 74 78 74 38 00 00 00 00 00 48 65 6c |llo.txt8.....Hel|
+00000020 6c 6f 20 43 4f 4d 50 31 35 32 31 0a 49 20 68 6f |lo COMP1521.I ho|
+00000030 70 65 20 79 6f 75 20 61 72 65 20 65 6e 6a 6f 79 |pe you are enjoy|
+00000040 69 6e 67 20 74 68 69 73 20 61 73 73 69 67 6e 6d |ing this assignm|
+00000050 65 6e 74 2e 0a 2d 63 38 2d 72 77 2d 72 2d 2d 72 |ent..-c8-rw-r--r|
+00000060 2d 2d 10 00 6c 61 73 74 5f 67 6f 6f 64 62 79 65 |--..last_goodbye|
+00000070 2e 74 78 74 a6 00 00 00 00 00 54 68 69 73 20 69 |.txt......This i|
+00000080 73 20 6f 75 72 20 6c 61 73 74 20 67 6f 6f 64 62 |s our last goodb|
+00000090 79 65 0a 49 20 68 61 74 65 20 74 6f 20 66 65 65 |ye.I hate to fee|
+000000a0 6c 20 74 68 65 20 6c 6f 76 65 20 62 65 74 77 65 |l the love betwe|
+000000b0 65 6e 20 75 73 20 64 69 65 0a 42 75 74 20 69 74 |en us die.But it|
+000000c0 27 73 20 6f 76 65 72 0a 4a 75 73 74 20 68 65 61 |'s over.Just hea|
+000000d0 72 20 74 68 69 73 20 61 6e 64 20 74 68 65 6e 20 |r this and then |
+000000e0 49 27 6c 6c 20 67 6f 0a 59 6f 75 20 67 61 76 65 |I'll go.You gave|
+000000f0 20 6d 65 20 6d 6f 72 65 20 74 6f 20 6c 69 76 65 | me more to live|
+00000100 20 66 6f 72 0a 4d 6f 72 65 20 74 68 61 6e 20 79 | for.More than y|
+00000110 6f 75 27 6c 6c 20 65 76 65 72 20 6b 6e 6f 77 0a |ou'll ever know.|
+00000120 60 |`|
+00000121
+</pre>
+
+  <p>
+    Each line of <cite><a title="man 1 hexdump" href="https://manpages.debian.org/jump?q=hexdump.1">hexdump</a></cite> output is in three groups:
+
+  </p><ul>
+    <li>
+      <p>
+        the <strong>address column</strong>:
+        this starts at <code>0x00000000</code>,
+        and increases by 0x10 (or 16 in base 10) each line;
+
+    </p></li><li>
+      <p>
+        the <strong>data columns</strong>:
+        after the address,
+        we get (up to) 16 two-digit hexadecimal values,
+        grouped into two blocks of eight values each,
+        which represents the actual data of the file, and
+
+    </p></li><li>
+      <p>
+        the <strong>human readable stripe</strong>:
+        at the very end of each line,
+        between the vertical bars (<code>|</code>)
+        is the human readable version of the bytes preceding,
+        or a <code>'.'</code> if the byte wouldn't ordinarily be visible.
+  </p></li></ul>
+
+  <p>
+    You could also use the
+    <cite><a title="man 1 hd" href="https://manpages.debian.org/jump?q=hd.1">hd</a></cite>,
+    <cite><a title="man 1 od" href="https://manpages.debian.org/jump?q=od.1">od</a></cite>, or
+    <cite><a title="man 1 xxd" href="https://manpages.debian.org/jump?q=xxd.1">xxd</a></cite> utilities instead of <cite><a title="man 1 hexdump" href="https://manpages.debian.org/jump?q=hexdump.1">hexdump</a></cite> .
+
+    Also provided for the assignment is <b>1521 show-tree</b> which
+    prints the contents of a tree in a more structured way, e.g.:
+
+<!-- TODO: fix -->
+</p><pre is="tty"><kbd is="sh">1521 show-tree examples/2_files.tree</kbd>
+Field name   Offset        Bytes                           ASCII/Numeric
+------------------------------------------------------------------------
+============================== Leaf   0 ================================
+magic        0x00000000    63                             chr c
+format       0x00000001    38                             chr 8
+mode         0x00000002    2d 72 77 2d 72 2d 2d 72 2d 2d  chr -rw-r--r--
+path len     0x0000000c    09 00                          dec 9
+pathname     0x0000000e    68 65 6c 6c 6f 2e 74 78 74     chr hello.txt
+content len  0x00000017    38 00 00 00 00 00              dec 56
+content      0x0000001d    48 65 6c 6c 6f 20 43 4f 4d 50  chr Hello COMP
+             0x00000027    31 35 32 31 0a 49 20 68 6f 70  chr 1521.I hop
+             0x00000031    65 20 79 6f 75 20 61 72 65 20  chr e you are
+             0x0000003b    65 6e 6a 6f 79 69 6e 67 20 74  chr enjoying t
+             0x00000045    68 69 73 20 61 73 73 69 67 6e  chr his assign
+             0x0000004f    6d 65 6e 74 2e 0a              chr ment..
+hash         0x00000055    2d                             dec 45
+============================== Leaf   1 ================================
+magic        0x00000056    63                             chr c
+format       0x00000057    38                             chr 8
+mode         0x00000058    2d 72 77 2d 72 2d 2d 72 2d 2d  chr -rw-r--r--
+path len     0x00000062    10 00                          dec 16
+pathname     0x00000064    6c 61 73 74 5f 67 6f 6f 64 62  chr last_goodb
+             0x0000006e    79 65 2e 74 78 74              chr ye.txt
+content len  0x00000074    a6 00 00 00 00 00              dec 166
+content      0x0000007a    54 68 69 73 20 69 73 20 6f 75  chr This is ou
+             0x00000084    72 20 6c 61 73 74 20 67 6f 6f  chr r last goo
+             0x0000008e    64 62 79 65 0a 49 20 68 61 74  chr dbye.I hat
+             0x00000098    65 20 74 6f 20 66 65 65 6c 20  chr e to feel
+             0x000000a2    74 68 65 20 6c 6f 76 65 20 62  chr the love b
+             0x000000ac    65 74 77 65 65 6e 20 75 73 20  chr etween us
+             0x000000b6    64 69 65 0a 42 75 74 20 69 74  chr die.But it
+             0x000000c0    27 73 20 6f 76 65 72 0a 4a 75  chr 's over.Ju
+             0x000000ca    73 74 20 68 65 61 72 20 74 68  chr st hear th
+             0x000000d4    69 73 20 61 6e 64 20 74 68 65  chr is and the
+             0x000000de    6e 20 49 27 6c 6c 20 67 6f 0a  chr n I'll go.
+             0x000000e8    59 6f 75 20 67 61 76 65 20 6d  chr You gave m
+             0x000000f2    65 20 6d 6f 72 65 20 74 6f 20  chr e more to
+             0x000000fc    6c 69 76 65 20 66 6f 72 0a 4d  chr live for.M
+             0x00000106    6f 72 65 20 74 68 61 6e 20 79  chr ore than y
+             0x00000110    6f 75 27 6c 6c 20 65 76 65 72  chr ou'll ever
+             0x0000011a    20 6b 6e 6f 77 0a              chr  know.
+hash         0x00000120    60                             dec 96
+</pre>
+
+  <h3 id="6-bit-format-subset-3-only">6-bit format (Subset 3 only)</h3>
+  <p>
+    leaf 6-bit format defines a subset of 64 8-bit values (bytes) to have a six-bit encoding; those six bits are
+    then stored packed.
+
+  </p><p>
+    The remaining 192 8-bit values can not be encoded in 6-bit format.
+
+  </p><p>
+    The functions <em>tree_to_6_bit</em> and <em>tree_from_6_bit</em> in <em>forest_6_bit.c</em>
+    to convert 8-bit values to and from 6-bit format.
+
+  </p><p>
+    You can find the mapping by reading the code in <em>forest_6_bit.c</em>.
+
+
+    <!-- =============================================================== -->
+  </p><h2 id="leaf-hash">The leaf hash (Subsets 1, 2, 3)</h2>
+  <p>
+    Each leaf ends with a <em>hash</em>
+    (sometimes referred to as a <em>digest</em>)
+    which calculated from the other values of the leaf.
+    This allows us to detect if
+    any bytes of the tree have changed,
+    for example by disk or network errors.
+
+  </p><p>
+    The <code>tree_hash()</code> function
+    makes one step of computation
+    of the hash of a sequence of bytes:
+
+    </p><div class="highlight"><pre><span></span><span class="kt">uint8_t</span><span class="w"> </span><span class="nf">tree_hash</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">current_hash_value</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">byte_value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">((</span><span class="n">current_hash_value</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">33</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0xff</span><span class="p">)</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="n">byte_value</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="w">    </span>
+</pre></div>
+
+
+  <p>
+    Given the hash value of the sequence up to this byte,
+    and the value of this byte it calculates the new hash value.
+
+  </p><p>
+    If we create a tree of a single one-byte file, like this:
+
+</p><pre is="tty"><kbd is="sh">echo &gt;a</kbd>
+<kbd is="sh">1521 forest -c a.tree a</kbd>
+</pre>
+
+  <p>
+    We can then inspect the tree,
+    and see its hash is <code>0x15</code>.
+
+</p><pre is="tty"><kbd is="sh">hexdump -Cv a.tree</kbd>
+00000000 63 38 2d 72 77 2d 72 2d 2d 72 2d 2d 01 00 61 01 |c8-rw-r--r--..a.|
+00000010 00 00 00 00 00 0a <mark>15</mark> |......<mark>.</mark>|
+00000017
+</pre>
+
+  <p>
+    Here's the sequence of calls that calculated that value:
+
+    
+</p><pre>tree_hash(0x00, 0x63) = 0x63
+tree_hash(0x63, 0x38) = 0xfb
+tree_hash(0xfb, 0x2d) = 0x76
+tree_hash(0x76, 0x72) = 0x44
+tree_hash(0x44, 0x77) = 0xb3
+tree_hash(0xb3, 0x2d) = 0x3e
+tree_hash(0x3e, 0x72) = 0x8c
+tree_hash(0x8c, 0x2d) = 0x21
+tree_hash(0x21, 0x2d) = 0x6c
+tree_hash(0x6c, 0x72) = 0x9e
+tree_hash(0x9e, 0x2d) = 0x73
+tree_hash(0x73, 0x2d) = 0xfe
+tree_hash(0xfe, 0x01) = 0xbf
+tree_hash(0xbf, 0x00) = 0x9f
+tree_hash(0x9f, 0x61) = 0x1e
+tree_hash(0x1e, 0x01) = 0xdf
+tree_hash(0xdf, 0x00) = 0xbf
+tree_hash(0xbf, 0x00) = 0x9f
+tree_hash(0x9f, 0x00) = 0x7f
+tree_hash(0x7f, 0x00) = 0x5f
+tree_hash(0x5f, 0x00) = 0x3f
+tree_hash(0x3f, 0x0a) = 0x15
+</pre>
+
+
+  <!-- =============================================================== -->
+  <h2 id="assumptions-clarifications">Assumptions and Clarifications</h2>
+
+  
+  
+
+    <p>
+      Like all good programmers,
+      you should make as few assumptions as possible.
+      If in doubt, match the output of the reference implementation.
+
+    </p><ul>
+      <li>
+        <p>
+          Your submitted code must be a single C program only.
+          You may not submit code in other languages.
+
+      </p></li><li>
+        <p>
+          You can call functions from the C standard library
+          available by default on CSE Linux systems:
+          including, <abbr>e.g.</abbr>,
+          <code>stdio.h</code>,
+          <code>stdlib.h</code>,
+          <code>string.h</code>,
+          <code>math.h</code>,
+          <code>assert.h</code>.
+
+      </p></li><li>
+        <p>
+          We will compile your code with <code>dcc</code> when marking.
+          Run-time errors from illegal or invalid C
+          will cause your code to fail automarking
+          (and will likely result in you losing marks).
+
+      </p></li><li>
+        <p>
+          Your program must not require extra compile options.
+          It must compile successfully with:
+</p><pre is="tty"><kbd is="sh">dcc *.c -o forest</kbd>
+</pre>
+
+      </li><li>
+        <p>
+          You may not use functions from other libraries.
+          In other words, you cannot use the dcc <code>-l</code> flag.
+
+      </p></li><li>
+        <p>
+          If your program prints debugging output,
+          it will fail automarking tests.
+          Make sure you disable any debugging output before submission.
+
+      </p></li><li>
+        <p>
+          You may not create or use temporary files.
+
+      </p></li><li>
+        <p>
+          You may not create subprocesses:
+          you may not use
+          <cite><a title="man 3 posix_spawn" href="http://man7.org/linux/man-pages/man3/posix_spawn.3.html">posix_spawn</a></cite>, <cite><a title="man 3 posix_spawnp" href="http://man7.org/linux/man-pages/man3/posix_spawnp.3.html">posix_spawnp</a></cite>,
+          <cite><a title="man 3 system" href="http://man7.org/linux/man-pages/man3/system.3.html">system</a></cite>,
+          <cite><a title="man 3 popen" href="http://man7.org/linux/man-pages/man3/popen.3.html">popen</a></cite>,
+          <cite><a title="man 2 fork" href="http://man7.org/linux/man-pages/man2/fork.2.html">fork</a></cite>, <cite><a title="man 2 vfork" href="http://man7.org/linux/man-pages/man2/vfork.2.html">vfork</a></cite>,
+          <cite><a title="man 2 clone" href="http://man7.org/linux/man-pages/man2/clone.2.html">clone</a></cite>,
+          or any of the <code>exec*</code> family of functions,
+          like <cite><a title="man 2 execve" href="http://man7.org/linux/man-pages/man2/execve.2.html">execve</a></cite>.
+
+      </p></li><li>
+        <p>
+          You may assume that the length
+          of a tree is less than the maximum
+          value supported by a <code>long</code>.
+
+      </p></li><li>
+        <p>
+          <em>forest</em> only has to handle ordinary files and directories.
+        </p><p>
+          <em>forest</em> does not have to handle symbolic links, devices or other special files.
+        </p><p>
+          <em>forest</em> will not be given directories containing symbolic links, devices or other special files.
+        </p><p>
+          <em>forest</em> does not have to handle hard links.
+
+      </p></li><li>
+        <p>
+          If completing a <code>forest</code> command would produce multiple errors,
+          you may produce any of the errors and stop.
+        </p><p>
+          In this case you do not have to produce the particular error that the reference implementation does.
+
+      </p></li><li>
+        <p>
+          If a leaf path name contains a directory then a leaf for the directory
+          will appear in the tree beforehand.
+        </p><p>
+          For example, if there is a leaf for the path name <code>a/b/file.txt</code> then
+          there will be preceding leafs for the directories <code>a</code> and <code>a/b</code>,
+        </p><p>
+          You may also assume the leaf for the directory specifies the directory is writable.
+
+      </p></li><li>
+        <p>
+          When adding an entire directory <small>(<a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-3">subset 3</a>)</small> to a tree you may add
+          the directory contents in any order to the tree,
+          after the directory leaf.
+        </p><p>
+          You do not have to match the order the reference implementation uses.
+
+      </p></li><li>
+        <p>
+          When a <code>forest</code> command specifies adding files with a common sub-directory.
+          You may add a leaf for the sub-directory multiple times.
+          For example, given this command:
+</p><pre is="tty"><kbd is="sh">./forest -c a.tree b/file1 b/file2</kbd>
+</pre>
+        You may add two (duplicate) leafs for <code>b</code>.
+
+      </li><li>
+        <p>
+          You can assume the path name of a tree being created with <code>-c</code>,
+          will not also be added to the tree,
+          and will not be in a directory being added to the tree.
+
+      </p></li><li>
+        <p>
+          It is not necessary to check the hashes or magic numbers of leafs in subset 0.
+          Subset 0 tests will only use valid leafs.
+
+
+      </p></li><li>
+        <p>
+
+          The reference implementation checks the magic number (first byte), format and hash
+          when listing (<code>-l</code> and <code>-L</code>) and extracting (<code>-x</code>) trees
+          and stops with an error message if they are are invalid, for example:
+        </p><p>
+</p><pre is="tty"><kbd is="sh">./forest -l examples/text_file.bad_hash.tree</kbd>
+error: incorrect leaf hash 0x2d should be 0x77
+<kbd is="sh">./forest -L examples/text_file.bad_magic.tree</kbd>
+error: incorrect first leaf byte: 0x39 should be 0x63
+</pre>
+        <p>
+          This is very desirable behaviour and you can implement this in your code.
+          However it will not be tested with <code>-l</code>, <code>-L</code> and <code>-x</code> command line options
+          to avoid problems in automarking.
+        </p><p>
+          Your code will only be tested with the <code>-C</code> option on trees with invalid hashes, magic numbers
+          and formats
+
+
+
+
+      </p></li><li>
+        <p>
+          It is not necessary to check the hashes or magic numbers in an existing tree when appending to it
+          (<em>-a</em>).
+
+    </p></li></ul>
+
+    <p>
+      If you need clarification on
+      what you can and cannot use or do for this assignment,
+      ask in the class forum.
+
+    </p><p>
+      You are required to submit
+      intermediate versions of your assignment.
+      See below for details.
+
+
+
+
+
+
+
+
+
+</p><h2 id="assessment" class="mt-5">Assessment</h2>
+
+
+
+<h3 id="assessment--testing">Testing</h3>
+<p>
+When you think your program is working,
+you can use <code>autotest</code>
+to run some simple automated tests:
+</p><p>
+
+</p><pre is="tty"><kbd is="sh">1521 autotest forest <var>[optionally: any extra .c or .h files]</var></kbd>
+</pre>
+You can also run autotests for a specific subset. For example, to run all tests from
+subset 1:
+<pre is="tty"><kbd is="sh">1521 autotest forest subset1 <var>[optionally: any extra .c or .h files]</var></kbd>
+</pre>
+Some tests are more complex than others. If you are failing more than one test,
+you are encouraged to focus on solving the first of those failing tests. To do so,
+you can run a specific test by giving its name to the <code>autotest</code> command:
+<pre is="tty"><kbd is="sh">1521 autotest forest subset1_fread_simple <var>[optionally: any extra .c or .h files]</var></kbd>
+</pre>
+
+
+
+
+
+<p>
+<code>1521 autotest</code> will not test everything.<br>
+Always do your own testing.
+</p><p>
+Automarking will be run by the lecturer after the submission deadline,
+using a superset of tests to those <code>autotest</code> runs for you.
+
+</p><aside class="warning">
+
+<p>
+Whilst we can detect errors have occurred,
+it is often substantially harder
+to automatically explain what that error was.
+As you continue into later subsets.
+the errors from <code>1521 autotest</code>
+will become less and less clear or useful.
+You will need to do your own debugging and analysis.
+</p>
+</aside>
+
+
+
+
+<h3 id="assessment--submission">Submission</h3>
+<p>
+When you are finished working on the assignment,
+you must submit your work by running <code>give</code>:
+
+
+</p><pre is="tty"><kbd is="sh">give cs1521 ass2_forest forest.c <var>[optionally: any extra .c or .h files]</var></kbd>
+</pre>
+
+
+<p>
+You must run <code>give</code> before <strong>Week 10 Friday 18:00:00</strong>
+to obtain the marks for this assignment.
+Note that this is an individual exercise,
+the work you submit with <code>give</code> must be entirely your own.
+
+</p><p>
+You can run <code>give</code> multiple times.<br>
+Only your last submission will be marked.
+
+</p><p>
+If you are working at home, you may find it more convenient
+to upload your work via
+<a href="https://cgi.cse.unsw.edu.au/~give/Student/give.php">give's web interface</a>.
+
+</p><p>
+You <em>cannot</em> obtain marks by emailing your code to tutors or lecturers.
+
+</p><p>
+You can check your latest submission on CSE servers with:
+</p><pre is="tty"><kbd is="sh">1521 classrun check ass2_forest</kbd>
+</pre>
+
+<p>
+You can check the files you have submitted <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/student/">here</a>.
+
+</p><p>
+Manual marking will be done by your tutor,
+who will mark for style and readability,
+as described in the <strong>Assessment</strong> section below.
+After your tutor has assessed your work,
+you can <a href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/student/">view your results here</a>;
+The resulting mark will also be available
+<a href="https://cgi.cse.unsw.edu.au/~give/Student/sturec.php">via give's web interface</a>.
+
+
+
+
+</p><h3 id="assessment--due-date" class="mt-5">Due Date</h3>
+<p>
+This assignment is due <strong>Week 10 Friday 18:00:00</strong> (2026-11-20 18:00:00).
+</p><p>
+The UNSW standard late penalty for assessment is 5% per day for 5 days - this is implemented hourly for this assignment.
+</p><p>
+Your assignment mark will be reduced by 0.2% for each hour (or part thereof) late past the submission deadline.
+</p><p>
+For example,
+if an assignment worth 60% was submitted half an hour late,
+it would be awarded 59.8%, whereas if it was submitted past 10 hours late,
+it would be awarded 57.8%.
+</p><p>
+Beware - submissions 5 or more days late will receive zero marks.
+This again is the UNSW standard assessment policy.
+
+
+
+</p><h3 id="assessment--assessment-scheme" class="mt-5">Assessment Scheme</h3>
+<p>
+This assignment will contribute
+<strong>15</strong> marks
+to your final COMP1521 mark.
+</p><p>
+80% of the marks for assignment 2
+will come from the performance of your code
+on a large series of tests.
+</p><p>
+20% of the marks for assignment 2
+will come from hand marking.
+These marks will be awarded on the basis of
+clarity, commenting, elegance and style.
+In other words, you will be assessed on
+how easy it is for a human to read and understand your program.
+</p>
+
+<p>
+An indicative assessment scheme for performance follows.
+The lecturer may vary the assessment scheme
+after inspecting the assignment submissions,
+but it is likely to be broadly similar to the following:
+</p>
+<table class="table table-sm w-75 mx-auto">
+<tbody>
+<tr><th scope="row">100% for performance
+</th><td>completely working subsets 0. 1, 2, &amp; 3 - everything works!
+</td></tr><tr><th scope="row">85% for performance
+</th><td>completely working subsets 0, 1 &amp; 2.
+</td></tr><tr><th scope="row">70% for performance
+</th><td>completely working subsets 0 &amp; 1.
+</td></tr><tr><th scope="row">55% for performance
+</th><td>completely working subset 0.
+</td></tr><tr><th scope="row">40-50% for performance
+</th><td>good progress, but not passing subset 0 autotests.
+</td></tr><tr><th scope="row">0%
+    </th><td>knowingly providing your work to anyone <br>
+        and it is subsequently submitted (by anyone).
+</td></tr><tr><th scope="row">0 FL for <br> COMP1521
+    </th><td>submitting any other person's work; <br>
+        this includes joint work.
+</td></tr><tr><th scope="row">academic <br> misconduct
+    </th><td>submitting another person's work without their consent;<br>
+        paying another person to do work for you.
+</td></tr></tbody>
+</table>
+
+<p>
+An indicative assessment scheme for style follows.
+The lecturer may vary the assessment scheme
+after inspecting the assignment submissions,
+but it is likely to be broadly similar to the following:
+</p>
+<table class="table table-sm w-75 mx-auto">
+<tbody>
+    <tr>
+        <th scope="row">100% for style</th>
+        <td>perfect style</td>
+    </tr>
+    <tr>
+        <th scope="row">90% for style</th>
+        <td>great style, almost all style characteristics perfect.</td>
+    </tr>
+    <tr>
+        <th scope="row">80% for style</th>
+        <td>good style, one or two style characteristics not well done.</td>
+    </tr>
+    <tr>
+        <th scope="row">70% for style</th>
+        <td>good style, a few style characteristics not well done.</td>
+    </tr>
+    <tr>
+        <th scope="row">60% for style</th>
+        <td>ok style, an attempt at most style characteristics.</td>
+    </tr>
+    <tr>
+        <th scope="row">≤ 50% for style</th>
+        <td>an attempt at style.</td>
+    </tr>
+</tbody>
+</table>
+<p>
+An indicative style rubric follows:
+</p>
+<ul>
+    <li>
+        Formatting <strong>(6/20)</strong>:
+        <ul>
+            <li>Whitespace (<abbr>e.g.</abbr> <code>1 + 2</code> instead of <code>1+2</code>)</li>
+            <li>Indentation (consistent, tabs or spaces are okay)</li>
+            <li>Line length (below 80 characters unless very exceptional)</li>
+            <li>Line breaks (using vertical whitespace to improve readability)</li>
+        </ul>
+    </li>
+    <li>
+        Documentation <strong>(8/20)</strong>:
+        <ul>
+            <li>Header comment (with name and zID)</li>
+            <li>Function comments (above each function with a good description)</li>
+            <li>Descriptive variable names (<abbr>e.g.</abbr> <code>char *home_directory</code> instead of <code>char *h</code>)</li>
+            <li>Descriptive function names (<abbr>e.g.</abbr> <code>get_home_directory</code> instead of <code>get_hd</code>)</li>
+            <li>Sensible commenting throughout the code (don't comment every single line; leave comments when necessary)</li>
+        </ul>
+    </li>
+    <li>
+        Elegance <strong>(5/20)</strong>:
+        <ul>
+            <li>Does this code avoid redundancy? (<abbr>e.g.</abbr> <a target="_blank" href="https://en.wikipedia.org/wiki/Don%27t_repeat_yourself">Don't repeat yourself!</a>)
+            </li><li>Are helper functions used to reduce complexity? (functions should be small and simple where possible)
+            </li><li>Are constants appropriately created and used? (magic numbers should be avoided)
+        </li></ul>
+    </li>
+    <li>
+        Portability <strong>(1/20)</strong>:
+        <ul>
+            <li>Would this code be able to compile and behave as expected on other POSIX-compliant machines? (using standard libraries without platform-specific code)</li>
+            <li>Does this code make any assumptions about the endianness of the machine it is running on?</li>
+        </ul>
+    </li>
+</ul>
+<p>
+Note that the following penalties apply to your total mark for plagiarism:
+</p>
+<table class="table table-sm w-75 mx-auto">
+<tbody>
+    <tr>
+        <th scope="row">0 for asst2</th>
+        <td>knowingly providing your work to anyone <br> and it is subsequently submitted (by anyone).</td>
+    </tr>
+    <tr>
+        <th scope="row">0 FL for <br> COMP1521</th>
+        <td>submitting any other person's work; this includes joint work.</td>
+    </tr>
+    <tr>
+        <th scope="row">academic <br> misconduct</th>
+        <td>submitting another person's work without their consent;<br> paying another person to do work for you.</td>
+    </tr>
+</tbody>
+</table>
+
+
+
+
+<h3 id="assessment--intermediate-versions-of-work" class="mt-5">Intermediate Versions of Work</h3>
+<p>
+You are required to submit intermediate versions of your assignment.
+</p><p>
+Every time you work on the assignment
+and make some progress
+you should copy your work to your CSE account
+and submit it using the <code>give</code> command above.
+It is fine if intermediate versions do not compile
+or otherwise fail submission tests.
+Only the final submitted version of your assignment will be marked.
+
+
+
+</p><h3 id="assignment-conditions" class="mt-5">Assignment Conditions</h3>
+<ul>
+<li><p>
+<strong>Joint work</strong> is <strong>not permitted</strong> on this assignment.
+</p><p>
+This is an individual assignment.
+The work you submit must be entirely your own work:
+submission of work even partly written by
+any other person is not permitted.
+
+</p><p>
+Do not request help from anyone
+other than the teaching staff of COMP1521 —
+for example, in the course forum, or in help sessions.
+
+</p><p>
+Do not post your assignment code to the course forum.
+The teaching staff can view code
+you have recently submitted with give,
+or recently autotested.
+
+</p><p>
+Assignment submissions are routinely examined
+both automatically and manually
+for work written by others.
+
+</p><p>
+<em>Rationale:</em>
+this assignment is designed to
+develop the individual skills needed
+to produce an entire working program.
+Using code written by, or taken from, other people
+will stop you learning these skills.
+Other CSE courses focus on skills needed for working in a team.
+
+</p></li><li><p>
+</p><p>
+The use of generative tools such as Github Copilot, ChatGPT, Google Gemini
+is <strong>not permitted</strong> on this assignment.
+
+</p><p>
+<em>Rationale:</em>
+this assignment is designed to develop your understanding of basic concepts.
+Using synthesis tools will stop you learning these fundamental concepts,
+which will significantly impact your ability to complete future courses.
+
+</p></li><li><p>
+<strong>Sharing, publishing, or distributing</strong>
+your assignment work is <strong>not permitted</strong>.
+
+</p><p>
+Do not provide or show your assignment work to any other person,
+other than the teaching staff of COMP1521.
+For example, do not message your work to friends.
+
+</p><p>
+Do not publish your assignment code via the Internet.
+For example, do not place your assignment in a public GitHub repository.
+
+</p><p>
+<em>Rationale:</em>
+by publishing or sharing your work,
+you are facilitating other students using your work.
+If other students find your assignment work
+and submit part or all of it as their own work,
+you may become involved in an academic integrity investigation.
+
+</p></li><li><p>
+<strong>Sharing, publishing, or distributing</strong>
+your assignment work
+after the completion of COMP1521
+is <strong>not permitted</strong>.
+
+</p><p>
+For example, do not place your assignment in a public GitHub repository
+after this offering of COMP1521 is over.
+
+</p><p>
+<em>Rationale:</em>
+COMP1521 may reuse assignment themes
+covering similar concepts and content.
+If students in future terms find your assignment work
+and submit part or all of it as their own work,
+you may become involved in an academic integrity investigation.
+</p></li></ul>
+
+<p>
+Violation of any of the above conditions
+may result in an academic integrity investigation,
+with possible penalties
+up to and including a mark of 0 in COMP1521,
+and exclusion from future studies at UNSW.
+For more information,
+read the <a href="https://www.gs.unsw.edu.au/policy/documents/studentcodepolicy.pdf">UNSW Student Code</a>,
+or contact <a href="mailto:cs1521@cse.unsw.edu.au">the course account</a>.
+
+
+
+</p></div> <!-- big col -->
+<div class="d-none d-lg-block col-lg-2">
+    <nav id="toc" data-toggle="toc"><ul class="nav navbar-nav"><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#contents">Contents</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#aims">Aims</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#the-task">The Task</a><ul class="nav navbar-nav"><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#getting-started">Getting Started</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-0">Subset 0</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-1">Subset 1</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-2">Subset 2</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#subset-3">Subset 3</a></li></ul></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#handling-errors">Handling Errors</a><ul class="nav navbar-nav"><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#reference-implementation">Reference implementation</a></li></ul></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#tree-format">The tree and leaf format</a><ul class="nav navbar-nav"><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#leaf-content-encodings-subset-3-only">leaf content encodings (Subset 3 only)</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#packed-n-bit-encoding-subset-3-only">Packed n-bit encoding (Subset 3 only)</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#inspecting-trees-and-leafs">Inspecting trees and leafs</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#6-bit-format-subset-3-only">6-bit format (Subset 3 only)</a></li></ul></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#leaf-hash">The leaf hash (Subsets 1, 2, 3)</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assumptions-clarifications">Assumptions and Clarifications</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment">Assessment</a><ul class="nav navbar-nav"><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment--testing">Testing</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment--submission">Submission</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment--due-date">Due Date</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment--assessment-scheme">Assessment Scheme</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assessment--intermediate-versions-of-work">Intermediate Versions of Work</a></li><li><a class="nav-link" href="https://cgi.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html#assignment-conditions">Assignment Conditions</a></li></ul></li></ul></nav>
+</div>
+
+</div> <!-- big row -->
+
+<script>
+    $(function() {
+    var navSelector = "#toc";
+    var $myNav = $(navSelector);
+    Toc.init($myNav);
+    $("body").scrollspy({
+      target: navSelector
+    });
+  });
+
+// This code ensures the ToC will also change tabs as necessary.
+
+window.addEventListener('hashchange', () => accessRightSection());
+async function accessRightSection() {
+    const id =  `#subsets_${location.hash.split(".")[0].split('#')[1]}`;
+    const tabButton = document.querySelector(`a.nav-link[href="${id}"][role="tab"]`);
+    if (tabButton) {
+        tabButton.click();
+        tabButton.scrollIntoView();
+        await new Promise(r => setTimeout(r, 200));
+        window.location.assign(location.hash);
+    }
+}
+</script>
+
+
+
+
+    
+</main>
+<footer class="mt-3 pt-3 bg-dark text-center no-print">
+    <p class="text-muted">
+        <strong>COMP1521 26T3: Computer Systems Fundamentals</strong>
+        is brought to you by <br>
+        the <a href="https://www.cse.unsw.edu.au/">School of Computer Science and Engineering</a><br>
+        at the <a href="https://www.unsw.edu.au/">University of New South Wales</a>, Sydney.<br>
+        For all enquiries, please email the class account at
+        <a href="mailto:cs1521@cse.unsw.edu.au">cs1521@cse.unsw.edu.au</a><br>
+
+        <small>CRICOS Provider 00098G</small>
+    </p>
+
+    
+</footer>
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true" style="visibility: visible !important;"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>
