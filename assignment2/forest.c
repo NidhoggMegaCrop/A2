@@ -39,11 +39,19 @@ struct leaf_header {
 };
 
 static FILE *open_file(char *pathname, char *mode);
-static uint8_t read_byte(FILE *stream);
-static uint64_t read_little_endian(FILE *stream, int n_bytes);
-static int read_leaf_header(FILE *tree, struct leaf_header *header);
+static void close_file(FILE *stream, char *pathname);
+static uint8_t read_byte(FILE *stream, uint8_t *hash);
+static void write_byte(FILE *stream, uint8_t byte, char *pathname);
+static uint64_t read_little_endian(FILE *stream, int n_bytes, uint8_t *hash);
+static int read_leaf_header(FILE *tree, struct leaf_header *header,
+                            uint8_t *hash);
 static uint64_t stored_content_length(uint8_t format, uint64_t content_length);
-static void skip_bytes(FILE *tree, uint64_t n_bytes);
+static void read_leaf_contents(FILE *tree, struct leaf_header *header,
+                               uint8_t *hash, FILE *output, char *out_path);
+static void verify_leaf_hash(FILE *tree, uint8_t computed_hash);
+static void extract_file(FILE *tree, struct leaf_header *header,
+                         uint8_t *hash);
+static mode_t mode_string_to_permissions(char *mode);
 
 
 // print the files & directories stored in tree_pathname (subset 0)
@@ -55,22 +63,23 @@ void list_tree(char *tree_pathname, int long_listing) {
     FILE *tree = open_file(tree_pathname, "rb");
 
     struct leaf_header header;
-    while (read_leaf_header(tree, &header)) {
+    uint8_t hash;
+    while (read_leaf_header(tree, &header, &hash)) {
+        // Read past the leaf's contents (hashing them), and check its hash
+        // byte before printing anything about the leaf.
+        read_leaf_contents(tree, &header, &hash, NULL, NULL);
+        verify_leaf_hash(tree, hash);
+
         if (long_listing) {
             printf("%s  %c  %5lu  %s\n", header.mode, header.format,
                    (unsigned long)header.content_length, header.pathname);
         } else {
             printf("%s\n", header.pathname);
         }
-
-        // Skip over the leaf's contents and its trailing hash byte.
-        uint64_t n_stored = stored_content_length(header.format,
-                                                  header.content_length);
-        skip_bytes(tree, n_stored + GALAXY_LENGTH_HASH);
         free(header.pathname);
     }
 
-    fclose(tree);
+    close_file(tree, tree_pathname);
 }
 
 
@@ -81,20 +90,41 @@ void list_tree(char *tree_pathname, int long_listing) {
 // is incorrect, what the incorrect value is and the correct value would be
 
 void check_tree(char *tree_pathname) {
+    FILE *tree = open_file(tree_pathname, "rb");
 
-    // REPLACE THIS PRINTF WITH YOUR CODE
+    struct leaf_header header;
+    uint8_t computed_hash;
+    while (read_leaf_header(tree, &header, &computed_hash)) {
+        read_leaf_contents(tree, &header, &computed_hash, NULL, NULL);
+        uint8_t stored_hash = read_byte(tree, NULL);
 
-    printf("check_tree called to check tree: '%s'\n", tree_pathname);
+        if (computed_hash == stored_hash) {
+            printf("%s - correct hash\n", header.pathname);
+        } else {
+            printf("%s - incorrect hash 0x%02x should be 0x%02x\n",
+                   header.pathname, computed_hash, stored_hash);
+        }
+        free(header.pathname);
+    }
+
+    close_file(tree, tree_pathname);
 }
 
 
 // extract the files/directories stored in tree_pathname (subset 1 & 3)
 
 void extract_tree(char *tree_pathname) {
+    FILE *tree = open_file(tree_pathname, "rb");
 
-    // REPLACE THIS PRINTF WITH YOUR CODE
+    struct leaf_header header;
+    uint8_t hash;
+    while (read_leaf_header(tree, &header, &hash)) {
+        extract_file(tree, &header, &hash);
+        verify_leaf_hash(tree, hash);
+        free(header.pathname);
+    }
 
-    printf("extract_tree called to extract tree: '%s'\n", tree_pathname);
+    close_file(tree, tree_pathname);
 }
 
 
@@ -137,9 +167,22 @@ static FILE *open_file(char *pathname, char *mode) {
 }
 
 
+// Close stream with fclose, exiting with an error message on failure.
+// (For a file being written, fclose is where a failed write can show up.)
+static void close_file(FILE *stream, char *pathname) {
+    if (fclose(stream) == EOF) {
+        perror(pathname);
+        exit(1);
+    }
+}
+
+
 // Read one byte from stream, exiting with an error if the stream ends
 // early or a read error occurs.
-static uint8_t read_byte(FILE *stream) {
+//
+// If hash is not NULL, the byte is also added to the running leaf hash
+// it points to.
+static uint8_t read_byte(FILE *stream, uint8_t *hash) {
     int byte = fgetc(stream);
     if (byte == EOF) {
         if (ferror(stream)) {
@@ -149,15 +192,28 @@ static uint8_t read_byte(FILE *stream) {
         }
         exit(1);
     }
+    if (hash != NULL) {
+        *hash = tree_hash(*hash, byte);
+    }
     return (uint8_t)byte;
 }
 
 
-// Read an unsigned little-endian integer n_bytes long from stream.
-static uint64_t read_little_endian(FILE *stream, int n_bytes) {
+// Write one byte to stream, exiting with an error message on failure.
+static void write_byte(FILE *stream, uint8_t byte, char *pathname) {
+    if (fputc(byte, stream) == EOF) {
+        perror(pathname);
+        exit(1);
+    }
+}
+
+
+// Read an unsigned little-endian integer n_bytes long from stream,
+// adding each byte to the running hash.
+static uint64_t read_little_endian(FILE *stream, int n_bytes, uint8_t *hash) {
     uint64_t value = 0;
     for (int i = 0; i < n_bytes; i++) {
-        uint64_t byte = read_byte(stream);
+        uint64_t byte = read_byte(stream, hash);
         value |= byte << (i * BITS_PER_BYTE);
     }
     return value;
@@ -167,9 +223,12 @@ static uint64_t read_little_endian(FILE *stream, int n_bytes) {
 // Read the fields of the next leaf in tree, up to (but not including)
 // its contents, into header.
 //
+// Starts a new running hash in *hash, covering every byte read.
+//
 // Returns 1 if a leaf header was read, or 0 if the tree has no more leafs.
 // The caller is responsible for freeing header->pathname.
-static int read_leaf_header(FILE *tree, struct leaf_header *header) {
+static int read_leaf_header(FILE *tree, struct leaf_header *header,
+                            uint8_t *hash) {
     int magic = fgetc(tree);
     if (magic == EOF) {
         if (ferror(tree)) {
@@ -183,8 +242,9 @@ static int read_leaf_header(FILE *tree, struct leaf_header *header) {
                 "should be 0x%02x\n", magic, LEAF_MAGIC);
         exit(1);
     }
+    *hash = tree_hash(0, magic);
 
-    header->format = read_byte(tree);
+    header->format = read_byte(tree, hash);
     if (header->format != LEAF_FMT_6 && header->format != LEAF_FMT_7 &&
         header->format != LEAF_FMT_8) {
         fprintf(stderr, "error: invalid leaf format: 0x%02x\n",
@@ -193,23 +253,25 @@ static int read_leaf_header(FILE *tree, struct leaf_header *header) {
     }
 
     for (int i = 0; i < GALAXY_LENGTH_MODE; i++) {
-        header->mode[i] = read_byte(tree);
+        header->mode[i] = read_byte(tree, hash);
     }
     header->mode[GALAXY_LENGTH_MODE] = '\0';
 
     uint64_t pathname_length = read_little_endian(tree,
-                                                  GALAXY_LENGTH_PATHNLEN);
+                                                  GALAXY_LENGTH_PATHNLEN,
+                                                  hash);
     header->pathname = malloc(pathname_length + 1);
     if (header->pathname == NULL) {
         perror("malloc");
         exit(1);
     }
     for (uint64_t i = 0; i < pathname_length; i++) {
-        header->pathname[i] = read_byte(tree);
+        header->pathname[i] = read_byte(tree, hash);
     }
     header->pathname[pathname_length] = '\0';
 
-    header->content_length = read_little_endian(tree, GALAXY_LENGTH_CONTLEN);
+    header->content_length = read_little_endian(tree, GALAXY_LENGTH_CONTLEN,
+                                                hash);
     return 1;
 }
 
@@ -227,9 +289,76 @@ static uint64_t stored_content_length(uint8_t format,
 }
 
 
-// Skip over the next n_bytes of tree.
-static void skip_bytes(FILE *tree, uint64_t n_bytes) {
-    for (uint64_t i = 0; i < n_bytes; i++) {
-        read_byte(tree);
+// Read the contents of the leaf described by header, adding each byte to
+// the running hash.
+//
+// If output is not NULL, the bytes are also written to it (out_path is
+// used in error messages). Contents are copied exactly as stored, which
+// is correct for 8-bit leafs.
+static void read_leaf_contents(FILE *tree, struct leaf_header *header,
+                               uint8_t *hash, FILE *output, char *out_path) {
+    uint64_t n_stored = stored_content_length(header->format,
+                                              header->content_length);
+    for (uint64_t i = 0; i < n_stored; i++) {
+        uint8_t byte = read_byte(tree, hash);
+        if (output != NULL) {
+            write_byte(output, byte, out_path);
+        }
     }
+}
+
+
+// Read a leaf's stored hash byte and compare it with computed_hash, the
+// hash of all the leaf's other bytes. Exits with an error if they differ.
+static void verify_leaf_hash(FILE *tree, uint8_t computed_hash) {
+    uint8_t stored_hash = read_byte(tree, NULL);
+    if (computed_hash != stored_hash) {
+        fprintf(stderr, "error: incorrect leaf hash 0x%02x should be 0x%02x\n",
+                computed_hash, stored_hash);
+        exit(1);
+    }
+}
+
+
+// Extract the file described by header from tree: write its contents to
+// header->pathname (overwriting any existing file), then set the file's
+// permissions to those recorded in the leaf.
+static void extract_file(FILE *tree, struct leaf_header *header,
+                         uint8_t *hash) {
+    printf("Extracting: %s\n", header->pathname);
+
+    FILE *output = open_file(header->pathname, "wb");
+    read_leaf_contents(tree, header, hash, output, header->pathname);
+    close_file(output, header->pathname);
+
+    mode_t permissions = mode_string_to_permissions(header->mode);
+    if (chmod(header->pathname, permissions) != 0) {
+        perror(header->pathname);
+        exit(1);
+    }
+}
+
+
+// Convert an ls-style mode string such as "-rwxr-xr-x" into permission
+// bits such as 0755.
+//
+// Characters 1-9 of the string correspond, in order, to the permission
+// bits from 0400 (owner read) down to 0001 (others execute); a '-' means
+// that bit is not set.
+static mode_t mode_string_to_permissions(char *mode) {
+    const mode_t permission_bits[] = {
+        S_IRUSR, S_IWUSR, S_IXUSR,
+        S_IRGRP, S_IWGRP, S_IXGRP,
+        S_IROTH, S_IWOTH, S_IXOTH,
+    };
+    int n_bits = sizeof permission_bits / sizeof permission_bits[0];
+
+    mode_t permissions = 0;
+    for (int i = 0; i < n_bits; i++) {
+        // mode[0] is the file type ('-' or 'd'), so permissions start at 1.
+        if (mode[i + 1] != '-') {
+            permissions |= permission_bits[i];
+        }
+    }
+    return permissions;
 }
