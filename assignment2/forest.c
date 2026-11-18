@@ -22,10 +22,15 @@
 
 #define BITS_PER_BYTE 8
 
-// Room for a mode string such as "-rwxr-xr-x" (GALAXY_LENGTH_MODE chars)
-// plus its terminating '\0'. GALAXY_LENGTH_MODE is not a constant
-// expression in C, so it can't size an array inside a struct.
-#define MODE_STRING_SIZE 11
+// Leaf format constants, defined here so this file doesn't depend on the
+// names of the optional constants in forest.h.
+#define MAGIC_NUMBER            0x63    // first byte of every leaf ('c')
+#define MODE_LENGTH             10      // e.g. "-rwxr-xr-x"
+#define PATHNAME_LENGTH_BYTES   2       // size of the pathname length field
+#define CONTENT_LENGTH_BYTES    6       // size of the content length field
+
+// Room for a mode string plus its terminating '\0'.
+#define MODE_STRING_SIZE        (MODE_LENGTH + 1)
 
 
 // ADD YOUR FUNCTION PROTOTYPES (AND STRUCTS IF ANY) HERE
@@ -237,9 +242,9 @@ static int read_leaf_header(FILE *tree, struct leaf_header *header,
         }
         return 0;
     }
-    if (magic != LEAF_MAGIC) {
+    if (magic != MAGIC_NUMBER) {
         fprintf(stderr, "error: incorrect first leaf byte: 0x%02x "
-                "should be 0x%02x\n", magic, LEAF_MAGIC);
+                "should be 0x%02x\n", magic, MAGIC_NUMBER);
         exit(1);
     }
     *hash = tree_hash(0, magic);
@@ -252,13 +257,13 @@ static int read_leaf_header(FILE *tree, struct leaf_header *header,
         exit(1);
     }
 
-    for (int i = 0; i < GALAXY_LENGTH_MODE; i++) {
+    for (int i = 0; i < MODE_LENGTH; i++) {
         header->mode[i] = read_byte(tree, hash);
     }
-    header->mode[GALAXY_LENGTH_MODE] = '\0';
+    header->mode[MODE_LENGTH] = '\0';
 
     uint64_t pathname_length = read_little_endian(tree,
-                                                  GALAXY_LENGTH_PATHNLEN,
+                                                  PATHNAME_LENGTH_BYTES,
                                                   hash);
     header->pathname = malloc(pathname_length + 1);
     if (header->pathname == NULL) {
@@ -270,7 +275,7 @@ static int read_leaf_header(FILE *tree, struct leaf_header *header,
     }
     header->pathname[pathname_length] = '\0';
 
-    header->content_length = read_little_endian(tree, GALAXY_LENGTH_CONTLEN,
+    header->content_length = read_little_endian(tree, CONTENT_LENGTH_BYTES,
                                                 hash);
     return 1;
 }
