@@ -11,28 +11,28 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <dirent.h>
 
 #include "forest.h"
 
 
-// ADD ANY extra #defines HERE
+// Constants for the leaf format
 
 #define MAGIC_NUMBER            0x63    // first byte of every leaf ('c')
 #define MODE_LENGTH             10      // e.g. "-rwxr-xr-x"
 #define PATHNAME_LENGTH_BYTES   2       // size of the pathname length field
 #define CONTENT_LENGTH_BYTES    6       // size of the content length field
 #define BITS_PER_BYTE           8
+#define BYTE_MASK               0xff    // keeps the lowest 8 bits
+#define MAX_7_BIT_VALUE         0x7f    // largest byte 7-bit format can store
 
 // The pathname length is stored in 2 bytes, so it can be at most 65535.
 #define MAX_PATHNAME_LENGTH     65535
 
 
-// ADD YOUR FUNCTION PROTOTYPES (AND STRUCTS IF ANY) HERE
+// Structs and function prototypes
 
 // The fields at the start of a leaf, before its contents.
 struct leaf {
@@ -68,7 +68,9 @@ int decode_value(int value, int format);
 void check_file_encodable(char *pathname, int format);
 void set_permissions(char *pathname, char *mode);
 void extract_directory(FILE *tree, struct leaf *leaf, uint8_t *hash);
+void get_stat(char *pathname, struct stat *s);
 int is_directory(char *pathname);
+int bits_per_value(int format);
 void add_parent_directories(FILE *tree, char *pathname, int format);
 void add_recursively(FILE *tree, char *pathname, int format);
 
@@ -178,7 +180,7 @@ void create_tree(char *tree_pathname, int append, int format,
 }
 
 
-// ADD YOUR EXTRA FUNCTIONS HERE
+// Helper functions
 
 
 // Open a file with fopen, printing an error and exiting if it fails.
@@ -269,8 +271,8 @@ int read_leaf_header(FILE *tree, struct leaf *leaf, uint8_t *hash) {
 // In 6-bit and 7-bit format each byte of the original file is packed
 // into 6 or 7 bits, so the contents are shorter (rounded up to a byte).
 unsigned long stored_length(struct leaf *leaf) {
-    unsigned long bits_per_byte = leaf->format - '0';
-    unsigned long total_bits = leaf->content_length * bits_per_byte;
+    unsigned long total_bits = leaf->content_length *
+                               bits_per_value(leaf->format);
     return (total_bits + BITS_PER_BYTE - 1) / BITS_PER_BYTE;
 }
 
@@ -292,7 +294,7 @@ void skip_contents(FILE *tree, struct leaf *leaf, uint8_t *hash) {
 // Any bits left over at the end are padding.
 void copy_contents(FILE *tree, struct leaf *leaf, uint8_t *hash,
                    FILE *output) {
-    int bits_per_value = leaf->format - '0';
+    int value_bits = bits_per_value(leaf->format);
     unsigned long length = stored_length(leaf);
     unsigned long n_values = 0;
 
@@ -302,9 +304,9 @@ void copy_contents(FILE *tree, struct leaf *leaf, uint8_t *hash,
         buffer = (buffer << BITS_PER_BYTE) | read_byte(tree, hash);
         n_bits = n_bits + BITS_PER_BYTE;
 
-        while (n_bits >= bits_per_value && n_values < leaf->content_length) {
-            n_bits = n_bits - bits_per_value;
-            int value = (buffer >> n_bits) & ((1 << bits_per_value) - 1);
+        while (n_bits >= value_bits && n_values < leaf->content_length) {
+            n_bits = n_bits - value_bits;
+            int value = (buffer >> n_bits) & ((1 << value_bits) - 1);
             if (fputc(decode_value(value, leaf->format), output) == EOF) {
                 perror(leaf->pathname);
                 exit(1);
@@ -407,7 +409,7 @@ void write_byte(FILE *tree, int byte, uint8_t *hash) {
 void write_number(FILE *tree, unsigned long number, int n_bytes,
                   uint8_t *hash) {
     for (int i = 0; i < n_bytes; i++) {
-        int byte = (number >> (i * BITS_PER_BYTE)) & 0xff;
+        int byte = (number >> (i * BITS_PER_BYTE)) & BYTE_MASK;
         write_byte(tree, byte, hash);
     }
 }
@@ -455,25 +457,26 @@ void permissions_to_mode(mode_t st_mode, char *mode) {
 void write_file_contents(FILE *tree, char *pathname, int format,
                          uint8_t *hash) {
     FILE *input = open_file(pathname, "rb");
-    int bits_per_value = format - '0';
+    int value_bits = bits_per_value(format);
 
     unsigned int buffer = 0;
     int n_bits = 0;
     int byte;
     while ((byte = fgetc(input)) != EOF) {
-        buffer = (buffer << bits_per_value) | encode_byte(byte, format);
-        n_bits = n_bits + bits_per_value;
+        buffer = (buffer << value_bits) | encode_byte(byte, format);
+        n_bits = n_bits + value_bits;
 
         while (n_bits >= BITS_PER_BYTE) {
             n_bits = n_bits - BITS_PER_BYTE;
-            write_byte(tree, (buffer >> n_bits) & 0xff, hash);
+            write_byte(tree, (buffer >> n_bits) & BYTE_MASK, hash);
         }
         // Keep only the bits not written yet.
         buffer = buffer & ((1 << n_bits) - 1);
     }
 
     if (n_bits > 0) {
-        write_byte(tree, (buffer << (BITS_PER_BYTE - n_bits)) & 0xff, hash);
+        int padding_bits = BITS_PER_BYTE - n_bits;
+        write_byte(tree, (buffer << padding_bits) & BYTE_MASK, hash);
     }
 
     fclose(input);
@@ -485,10 +488,7 @@ void write_file_contents(FILE *tree, char *pathname, int format,
 // A directory's leaf has no contents.
 void add_leaf(FILE *tree, char *pathname, int format) {
     struct stat s;
-    if (stat(pathname, &s) != 0) {
-        perror(pathname);
-        exit(1);
-    }
+    get_stat(pathname, &s);
 
     int directory = S_ISDIR(s.st_mode);
     unsigned long content_length = 0;
@@ -525,7 +525,7 @@ int encode_byte(int byte, int format) {
     if (format == LEAF_FMT_6) {
         return tree_to_6_bit(byte);
     }
-    if (format == LEAF_FMT_7 && byte > 0x7f) {
+    if (format == LEAF_FMT_7 && byte > MAX_7_BIT_VALUE) {
         return -1;
     }
     return byte;
@@ -587,14 +587,28 @@ void extract_directory(FILE *tree, struct leaf *leaf, uint8_t *hash) {
 }
 
 
-// Return 1 if pathname is a directory, 0 otherwise.
-int is_directory(char *pathname) {
-    struct stat s;
-    if (stat(pathname, &s) != 0) {
+// Get the metadata (type, permissions, size) of pathname with stat.
+// Prints an error and exits if it fails.
+void get_stat(char *pathname, struct stat *s) {
+    if (stat(pathname, s) != 0) {
         perror(pathname);
         exit(1);
     }
+}
+
+
+// Return 1 if pathname is a directory, 0 otherwise.
+int is_directory(char *pathname) {
+    struct stat s;
+    get_stat(pathname, &s);
     return S_ISDIR(s.st_mode);
+}
+
+
+// Return how many bits each byte of a file takes up in format:
+// 6, 7 or 8 (the format bytes are the characters '6', '7' and '8').
+int bits_per_value(int format) {
+    return format - '0';
 }
 
 
