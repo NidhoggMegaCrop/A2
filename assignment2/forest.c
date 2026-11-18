@@ -2,7 +2,7 @@
 // COMP1521 26T3 --- Assignment 2: `forest', a simple file archiver
 // <https://www.cse.unsw.edu.au/~cs1521/26T3/assignments/ass2/index.html>
 //
-// Written by YOUR-NAME-HERE (z5555555) on INSERT-DATE-HERE.
+// Written by Ziqi Xie (z5634028) on 1/11/2026.
 //
 // 2024-03-08   v1.1    Team COMP1521 <cs1521 at cse.unsw.edu.au>
 
