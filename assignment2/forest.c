@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -59,8 +60,17 @@ void write_number(FILE *tree, unsigned long number, int n_bytes,
                   uint8_t *hash);
 void write_string(FILE *tree, char *string, int length, uint8_t *hash);
 void permissions_to_mode(mode_t st_mode, char *mode);
-void write_file_contents(FILE *tree, char *pathname, uint8_t *hash);
-void add_file(FILE *tree, char *pathname, int format);
+void write_file_contents(FILE *tree, char *pathname, int format,
+                         uint8_t *hash);
+void add_leaf(FILE *tree, char *pathname, int format);
+int encode_byte(int byte, int format);
+int decode_value(int value, int format);
+void check_file_encodable(char *pathname, int format);
+void set_permissions(char *pathname, char *mode);
+void extract_directory(FILE *tree, struct leaf *leaf, uint8_t *hash);
+int is_directory(char *pathname);
+void add_parent_directories(FILE *tree, char *pathname, int format);
+void add_recursively(FILE *tree, char *pathname, int format);
 
 
 // print the files & directories stored in tree_pathname (subset 0)
@@ -124,7 +134,11 @@ void extract_tree(char *tree_pathname) {
     struct leaf leaf;
     uint8_t hash;
     while (read_leaf_header(tree, &leaf, &hash)) {
-        extract_file(tree, &leaf, &hash);
+        if (leaf.mode[0] == 'd') {
+            extract_directory(tree, &leaf, &hash);
+        } else {
+            extract_file(tree, &leaf, &hash);
+        }
         check_hash(tree, hash);
     }
 
@@ -153,7 +167,8 @@ void create_tree(char *tree_pathname, int append, int format,
     }
 
     for (int i = 0; i < n_pathnames; i++) {
-        add_file(tree, pathnames[i], format);
+        add_parent_directories(tree, pathnames[i], format);
+        add_recursively(tree, pathnames[i], format);
     }
 
     if (fclose(tree) != 0) {
@@ -270,15 +285,34 @@ void skip_contents(FILE *tree, struct leaf *leaf, uint8_t *hash) {
 
 
 // Copy a leaf's contents to output, adding them to the running hash.
+//
+// The contents are a stream of packed n-bit values (n = 6, 7 or 8).
+// Bytes from the tree are added to the right of buffer; whenever buffer
+// holds at least n bits, the leftmost n bits are the next value.
+// Any bits left over at the end are padding.
 void copy_contents(FILE *tree, struct leaf *leaf, uint8_t *hash,
                    FILE *output) {
+    int bits_per_value = leaf->format - '0';
     unsigned long length = stored_length(leaf);
+    unsigned long n_values = 0;
+
+    unsigned int buffer = 0;
+    int n_bits = 0;
     for (unsigned long i = 0; i < length; i++) {
-        int byte = read_byte(tree, hash);
-        if (fputc(byte, output) == EOF) {
-            perror(leaf->pathname);
-            exit(1);
+        buffer = (buffer << BITS_PER_BYTE) | read_byte(tree, hash);
+        n_bits = n_bits + BITS_PER_BYTE;
+
+        while (n_bits >= bits_per_value && n_values < leaf->content_length) {
+            n_bits = n_bits - bits_per_value;
+            int value = (buffer >> n_bits) & ((1 << bits_per_value) - 1);
+            if (fputc(decode_value(value, leaf->format), output) == EOF) {
+                perror(leaf->pathname);
+                exit(1);
+            }
+            n_values++;
         }
+        // Keep only the bits not used yet.
+        buffer = buffer & ((1 << n_bits) - 1);
     }
 }
 
@@ -308,10 +342,7 @@ void extract_file(FILE *tree, struct leaf *leaf, uint8_t *hash) {
         exit(1);
     }
 
-    if (chmod(leaf->pathname, mode_to_permissions(leaf->mode)) != 0) {
-        perror(leaf->pathname);
-        exit(1);
-    }
+    set_permissions(leaf->pathname, leaf->mode);
 }
 
 
@@ -415,27 +446,55 @@ void permissions_to_mode(mode_t st_mode, char *mode) {
 }
 
 
-// Copy every byte of the file at pathname into tree, adding each byte
-// to the running hash.
-void write_file_contents(FILE *tree, char *pathname, uint8_t *hash) {
+// Copy the file at pathname into tree as packed n-bit values
+// (n = 6, 7 or 8, from format), adding each byte written to the hash.
+//
+// Each value is added to the right of buffer; whenever buffer holds at
+// least 8 bits, the leftmost 8 are written out. Any bits left at the end
+// are written in one last byte, padded on the right with zeros.
+void write_file_contents(FILE *tree, char *pathname, int format,
+                         uint8_t *hash) {
     FILE *input = open_file(pathname, "rb");
+    int bits_per_value = format - '0';
 
+    unsigned int buffer = 0;
+    int n_bits = 0;
     int byte;
     while ((byte = fgetc(input)) != EOF) {
-        write_byte(tree, byte, hash);
+        buffer = (buffer << bits_per_value) | encode_byte(byte, format);
+        n_bits = n_bits + bits_per_value;
+
+        while (n_bits >= BITS_PER_BYTE) {
+            n_bits = n_bits - BITS_PER_BYTE;
+            write_byte(tree, (buffer >> n_bits) & 0xff, hash);
+        }
+        // Keep only the bits not written yet.
+        buffer = buffer & ((1 << n_bits) - 1);
+    }
+
+    if (n_bits > 0) {
+        write_byte(tree, (buffer << (BITS_PER_BYTE - n_bits)) & 0xff, hash);
     }
 
     fclose(input);
 }
 
 
-// Add one leaf to tree for the file at pathname:
+// Add one leaf to tree for the file or directory at pathname:
 // header fields, then the file's contents, then the leaf hash.
-void add_file(FILE *tree, char *pathname, int format) {
+// A directory's leaf has no contents.
+void add_leaf(FILE *tree, char *pathname, int format) {
     struct stat s;
     if (stat(pathname, &s) != 0) {
         perror(pathname);
         exit(1);
+    }
+
+    int directory = S_ISDIR(s.st_mode);
+    unsigned long content_length = 0;
+    if (!directory) {
+        check_file_encodable(pathname, format);
+        content_length = s.st_size;
     }
 
     printf("Adding: %s\n", pathname);
@@ -450,9 +509,134 @@ void add_file(FILE *tree, char *pathname, int format) {
     write_string(tree, mode, MODE_LENGTH, &hash);
     write_number(tree, pathname_length, PATHNAME_LENGTH_BYTES, &hash);
     write_string(tree, pathname, pathname_length, &hash);
-    write_number(tree, s.st_size, CONTENT_LENGTH_BYTES, &hash);
-    write_file_contents(tree, pathname, &hash);
+    write_number(tree, content_length, CONTENT_LENGTH_BYTES, &hash);
+    if (!directory) {
+        write_file_contents(tree, pathname, format, &hash);
+    }
 
     // The hash byte itself is not part of the hash.
     put_byte(tree, hash);
+}
+
+
+// Convert a byte of a file into the value stored for it in format.
+// Returns -1 if the byte can't be stored in that format.
+int encode_byte(int byte, int format) {
+    if (format == LEAF_FMT_6) {
+        return tree_to_6_bit(byte);
+    }
+    if (format == LEAF_FMT_7 && byte > 0x7f) {
+        return -1;
+    }
+    return byte;
+}
+
+
+// Convert a value stored in format back into the original byte.
+// This is the reverse of encode_byte.
+int decode_value(int value, int format) {
+    if (format == LEAF_FMT_6) {
+        return tree_from_6_bit(value);
+    }
+    return value;
+}
+
+
+// Check every byte of the file at pathname can be stored in format.
+// Prints an error and exits at the first byte that can't.
+void check_file_encodable(char *pathname, int format) {
+    FILE *input = open_file(pathname, "rb");
+
+    int byte;
+    while ((byte = fgetc(input)) != EOF) {
+        if (encode_byte(byte, format) < 0) {
+            fprintf(stderr, "error: byte 0x%02x can not be represented in "
+                    "%c-bit format\n", byte, format);
+            exit(1);
+        }
+    }
+
+    fclose(input);
+}
+
+
+// Set the permissions of pathname to those in an ls-style mode string.
+void set_permissions(char *pathname, char *mode) {
+    if (chmod(pathname, mode_to_permissions(mode)) != 0) {
+        perror(pathname);
+        exit(1);
+    }
+}
+
+
+// Extract one directory from tree: create it if it doesn't already
+// exist, then set its permissions.
+void extract_directory(FILE *tree, struct leaf *leaf, uint8_t *hash) {
+    printf("Creating directory: %s\n", leaf->pathname);
+
+    mode_t permissions = mode_to_permissions(leaf->mode);
+    if (mkdir(leaf->pathname, permissions) != 0 && errno != EEXIST) {
+        perror(leaf->pathname);
+        exit(1);
+    }
+    set_permissions(leaf->pathname, leaf->mode);
+
+    // A directory leaf has no contents, but read past them anyway so the
+    // hash is calculated the same way as for a file.
+    skip_contents(tree, leaf, hash);
+}
+
+
+// Return 1 if pathname is a directory, 0 otherwise.
+int is_directory(char *pathname) {
+    struct stat s;
+    if (stat(pathname, &s) != 0) {
+        perror(pathname);
+        exit(1);
+    }
+    return S_ISDIR(s.st_mode);
+}
+
+
+// Add a leaf for each directory in pathname before the last part,
+// e.g. for "a/b/file.txt" add leafs for "a" and "a/b".
+void add_parent_directories(FILE *tree, char *pathname, int format) {
+    char parent[MAX_PATHNAME_LENGTH + 1];
+
+    for (int i = 1; pathname[i] != '\0'; i++) {
+        if (pathname[i] == '/') {
+            strncpy(parent, pathname, i);
+            parent[i] = '\0';
+            add_leaf(tree, parent, format);
+        }
+    }
+}
+
+
+// Add a leaf for pathname. If pathname is a directory, also add
+// everything inside it, in alphabetical order.
+void add_recursively(FILE *tree, char *pathname, int format) {
+    add_leaf(tree, pathname, format);
+    if (!is_directory(pathname)) {
+        return;
+    }
+
+    // scandir gives the directory's entries sorted by alphasort.
+    struct dirent **entries;
+    int n_entries = scandir(pathname, &entries, NULL, alphasort);
+    if (n_entries < 0) {
+        perror(pathname);
+        exit(1);
+    }
+
+    for (int i = 0; i < n_entries; i++) {
+        char *name = entries[i]->d_name;
+        if (strcmp(name, ".") != 0 && strcmp(name, "..") != 0) {
+            char child[MAX_PATHNAME_LENGTH + 1];
+            snprintf(child, sizeof child, "%s/%s", pathname, name);
+            add_recursively(tree, child, format);
+        }
+        free(entries[i]);
+    }
+    free(entries);
 }
