@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -52,6 +53,14 @@ void copy_contents(FILE *tree, struct leaf *leaf, uint8_t *hash,
 void check_hash(FILE *tree, uint8_t hash);
 void extract_file(FILE *tree, struct leaf *leaf, uint8_t *hash);
 mode_t mode_to_permissions(char *mode);
+void put_byte(FILE *tree, int byte);
+void write_byte(FILE *tree, int byte, uint8_t *hash);
+void write_number(FILE *tree, unsigned long number, int n_bytes,
+                  uint8_t *hash);
+void write_string(FILE *tree, char *string, int length, uint8_t *hash);
+void permissions_to_mode(mode_t st_mode, char *mode);
+void write_file_contents(FILE *tree, char *pathname, uint8_t *hash);
+void add_file(FILE *tree, char *pathname, int format);
 
 
 // print the files & directories stored in tree_pathname (subset 0)
@@ -135,15 +144,21 @@ void extract_tree(char *tree_pathname) {
 
 void create_tree(char *tree_pathname, int append, int format,
                    int n_pathnames, char *pathnames[n_pathnames]) {
+    // "ab" adds to the end of an existing tree; "wb" starts a new one.
+    FILE *tree;
+    if (append) {
+        tree = open_file(tree_pathname, "ab");
+    } else {
+        tree = open_file(tree_pathname, "wb");
+    }
 
-    // REPLACE THIS CODE PRINTFS WITH YOUR CODE
+    for (int i = 0; i < n_pathnames; i++) {
+        add_file(tree, pathnames[i], format);
+    }
 
-    printf("create_tree called to create tree: '%s'\n", tree_pathname);
-    printf("format = %x\n", format);
-    printf("append = %d\n", append);
-    printf("These %d pathnames specified:\n", n_pathnames);
-    for (int p = 0; p < n_pathnames; p++) {
-        printf("%s\n", pathnames[p]);
+    if (fclose(tree) != 0) {
+        perror(tree_pathname);
+        exit(1);
     }
 }
 
@@ -336,4 +351,108 @@ mode_t mode_to_permissions(char *mode) {
     }
 
     return permissions;
+}
+
+
+// Write one byte to tree.
+// Prints an error and exits if the write fails.
+void put_byte(FILE *tree, int byte) {
+    if (fputc(byte, tree) == EOF) {
+        perror("fputc");
+        exit(1);
+    }
+}
+
+
+// Write one byte to tree, and add it to the leaf's running hash.
+void write_byte(FILE *tree, int byte, uint8_t *hash) {
+    put_byte(tree, byte);
+    *hash = tree_hash(*hash, byte);
+}
+
+
+// Write number to tree as an n_bytes long little-endian number.
+// The least significant byte is written first.
+void write_number(FILE *tree, unsigned long number, int n_bytes,
+                  uint8_t *hash) {
+    for (int i = 0; i < n_bytes; i++) {
+        int byte = (number >> (i * BITS_PER_BYTE)) & 0xff;
+        write_byte(tree, byte, hash);
+    }
+}
+
+
+// Write the first length characters of string to tree (without a '\0').
+void write_string(FILE *tree, char *string, int length, uint8_t *hash) {
+    for (int i = 0; i < length; i++) {
+        write_byte(tree, string[i], hash);
+    }
+}
+
+
+// Convert a file's st_mode (from stat) into an ls-style mode string,
+// e.g. "-rwxr-xr-x". This is the reverse of mode_to_permissions.
+void permissions_to_mode(mode_t st_mode, char *mode) {
+    if (S_ISDIR(st_mode)) {
+        mode[0] = 'd';
+    } else {
+        mode[0] = '-';
+    }
+
+    mode[1] = (st_mode & S_IRUSR) ? 'r' : '-';
+    mode[2] = (st_mode & S_IWUSR) ? 'w' : '-';
+    mode[3] = (st_mode & S_IXUSR) ? 'x' : '-';
+
+    mode[4] = (st_mode & S_IRGRP) ? 'r' : '-';
+    mode[5] = (st_mode & S_IWGRP) ? 'w' : '-';
+    mode[6] = (st_mode & S_IXGRP) ? 'x' : '-';
+
+    mode[7] = (st_mode & S_IROTH) ? 'r' : '-';
+    mode[8] = (st_mode & S_IWOTH) ? 'w' : '-';
+    mode[9] = (st_mode & S_IXOTH) ? 'x' : '-';
+
+    mode[MODE_LENGTH] = '\0';
+}
+
+
+// Copy every byte of the file at pathname into tree, adding each byte
+// to the running hash.
+void write_file_contents(FILE *tree, char *pathname, uint8_t *hash) {
+    FILE *input = open_file(pathname, "rb");
+
+    int byte;
+    while ((byte = fgetc(input)) != EOF) {
+        write_byte(tree, byte, hash);
+    }
+
+    fclose(input);
+}
+
+
+// Add one leaf to tree for the file at pathname:
+// header fields, then the file's contents, then the leaf hash.
+void add_file(FILE *tree, char *pathname, int format) {
+    struct stat s;
+    if (stat(pathname, &s) != 0) {
+        perror(pathname);
+        exit(1);
+    }
+
+    printf("Adding: %s\n", pathname);
+
+    char mode[MODE_LENGTH + 1];
+    permissions_to_mode(s.st_mode, mode);
+    int pathname_length = strlen(pathname);
+
+    uint8_t hash = 0;
+    write_byte(tree, MAGIC_NUMBER, &hash);
+    write_byte(tree, format, &hash);
+    write_string(tree, mode, MODE_LENGTH, &hash);
+    write_number(tree, pathname_length, PATHNAME_LENGTH_BYTES, &hash);
+    write_string(tree, pathname, pathname_length, &hash);
+    write_number(tree, s.st_size, CONTENT_LENGTH_BYTES, &hash);
+    write_file_contents(tree, pathname, &hash);
+
+    // The hash byte itself is not part of the hash.
+    put_byte(tree, hash);
 }
